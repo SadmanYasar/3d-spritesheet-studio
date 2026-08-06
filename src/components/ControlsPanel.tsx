@@ -117,7 +117,7 @@ export function ControlsPanel({
         className="flex flex-col h-full overflow-hidden"
       >
         <div className="border-b-2 border-black dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-900 p-2">
-          <TabsList className="w-full justify-start overflow-x-auto no-scrollbar">
+          <TabsList className="w-full justify-start overflow-x-auto custom-scrollbar pb-1 min-w-0">
             <TabsTrigger value="spritesheet">
               <Grid className="w-3.5 h-3.5" />
               <span>Spritesheet</span>
