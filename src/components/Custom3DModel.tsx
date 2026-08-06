@@ -169,6 +169,14 @@ export function Custom3DModel({
         } else if (mesh.userData.originalMaterial) {
           mesh.material = mesh.userData.originalMaterial;
         }
+
+        if (mesh.material) {
+          if (Array.isArray(mesh.material)) {
+            mesh.material.forEach((m) => (m.needsUpdate = true));
+          } else {
+            mesh.material.needsUpdate = true;
+          }
+        }
       }
     });
   }, [modelObject, materialOverride]);
@@ -214,11 +222,21 @@ function normalizeAndCenter(object: THREE.Object3D) {
 
   object.scale.set(scale, scale, scale);
 
-  // Enable shadows for all meshes
+  // Enable shadows and force material shader update for all meshes
   object.traverse((child) => {
     if ((child as THREE.Mesh).isMesh) {
-      child.castShadow = true;
-      child.receiveShadow = true;
+      const mesh = child as THREE.Mesh;
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+      if (mesh.material) {
+        if (Array.isArray(mesh.material)) {
+          mesh.material.forEach((m) => {
+            m.needsUpdate = true;
+          });
+        } else {
+          mesh.material.needsUpdate = true;
+        }
+      }
     }
   });
 }

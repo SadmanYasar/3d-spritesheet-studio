@@ -51,12 +51,11 @@ export default function App() {
   const [spritesheetConfig, setSpritesheetConfig] =
     useState<SpritesheetConfig>(DEFAULT_SPRITESHEET_CONFIG);
   const [selectedModel, setSelectedModel] = useState<ModelAsset>({
-    id: 'sample-robot',
-    name: 'Cyber Robot Head',
-    type: 'sample',
-    sampleType: 'robot_head',
-    url: '',
-    format: 'procedural',
+    id: 'model-gman',
+    name: 'G-Man Head',
+    type: 'custom',
+    url: '/gman_head_rigged.glb',
+    format: 'glb',
   });
 
   const [generatedSpritesheet, setGeneratedSpritesheet] = useState<GeneratedSpritesheet | null>(
@@ -83,23 +82,39 @@ export default function App() {
     saveRecentConfig(sceneConfig, spritesheetConfig);
   }, [sceneConfig, spritesheetConfig]);
 
-  // Initial automatic bake on mount so the user has an immediate result!
+  const bakerRef = useRef<any>(null);
+
+  // Initial automatic bake on mount
   useEffect(() => {
     let isCancelled = false;
     const initialBake = async () => {
+      // Small timeout to allow R3F canvas and environment map to finish mounting
+      await new Promise((r) => setTimeout(r, 250));
+      if (isCancelled) return;
+
       try {
         setIsGenerating(true);
-        const result = await generateSpritesheet(
-          selectedModel,
-          sceneConfig,
-          spritesheetConfig,
-          (pct, text) => {
+        let result;
+        if (bakerRef.current) {
+          result = await bakerRef.current(spritesheetConfig, (pct: number, text: string) => {
             if (!isCancelled) {
               setProgressPct(pct);
               setProgressText(text);
             }
-          }
-        );
+          });
+        } else {
+          result = await generateSpritesheet(
+            selectedModel,
+            sceneConfig,
+            spritesheetConfig,
+            (pct, text) => {
+              if (!isCancelled) {
+                setProgressPct(pct);
+                setProgressText(text);
+              }
+            }
+          );
+        }
         if (!isCancelled) {
           setGeneratedSpritesheet(result);
         }
@@ -125,15 +140,23 @@ export default function App() {
       setProgressPct(0);
       setProgressText('Starting render engine...');
 
-      const result = await generateSpritesheet(
-        selectedModel,
-        sceneConfig,
-        spritesheetConfig,
-        (pct, text) => {
+      let result;
+      if (bakerRef.current) {
+        result = await bakerRef.current(spritesheetConfig, (pct: number, text: string) => {
           setProgressPct(pct);
           setProgressText(text);
-        }
-      );
+        });
+      } else {
+        result = await generateSpritesheet(
+          selectedModel,
+          sceneConfig,
+          spritesheetConfig,
+          (pct, text) => {
+            setProgressPct(pct);
+            setProgressText(text);
+          }
+        );
+      }
 
       setGeneratedSpritesheet(result);
     } catch (err: any) {
@@ -223,111 +246,109 @@ export default function App() {
         )}
 
         {/* View 1: 3D Generator Studio */}
-        {activeView === 'studio' && (
-          <div className="space-y-6">
-            {/* Top Row: Live 3D Viewport + Config Controls Panel */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
-              {/* 3D Viewport Canvas */}
-              <div className="lg:col-span-7 xl:col-span-8 flex flex-col space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Box className="w-4 h-4 text-black dark:text-white" />
-                    <h2 className="text-xs font-black text-zinc-900 dark:text-zinc-100 uppercase tracking-wider">
-                      Interactive 3D Scene Viewport
-                    </h2>
-                  </div>
-                  <span className="text-[11px] font-mono font-bold text-zinc-700 dark:text-zinc-300">
-                    Model: <strong className="text-black dark:text-white underline">{selectedModel.name}</strong>
-                  </span>
+        <div className={activeView === 'studio' ? 'space-y-6' : 'hidden'}>
+          {/* Top Row: Live 3D Viewport + Config Controls Panel */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+            {/* 3D Viewport Canvas */}
+            <div className="lg:col-span-7 xl:col-span-8 flex flex-col space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Box className="w-4 h-4 text-black dark:text-white" />
+                  <h2 className="text-xs font-black text-zinc-900 dark:text-zinc-100 uppercase tracking-wider">
+                    Interactive 3D Scene Viewport
+                  </h2>
                 </div>
-
-                <div className="h-[360px] sm:h-[440px] lg:h-[480px] w-full">
-                  <ThreeCanvas
-                    modelAsset={selectedModel}
-                    sceneConfig={sceneConfig}
-                    onModelError={(err) => setErrorMessage(err)}
-                  />
-                </div>
+                <span className="text-[11px] font-mono font-bold text-zinc-700 dark:text-zinc-300">
+                  Model: <strong className="text-black dark:text-white underline">{selectedModel.name}</strong>
+                </span>
               </div>
 
-              {/* Controls Accordion Sidebar */}
-              <div className="lg:col-span-5 xl:col-span-4 h-[480px]">
-                <ControlsPanel
+              <div className="h-[360px] sm:h-[440px] lg:h-[480px] w-full">
+                <ThreeCanvas
+                  modelAsset={selectedModel}
                   sceneConfig={sceneConfig}
                   setSceneConfig={setSceneConfig}
-                  spritesheetConfig={spritesheetConfig}
-                  setSpritesheetConfig={setSpritesheetConfig}
-                  selectedModel={selectedModel}
-                  setSelectedModel={setSelectedModel}
-                  presets={presets}
-                  onApplyPreset={handleApplyPreset}
-                  onSaveNewPreset={handleSaveNewPreset}
-                  onDeletePreset={handleDeletePreset}
-                  onUploadCustomFile={handleUploadCustomFile}
+                  bakerRef={bakerRef}
+                  onModelError={(err) => setErrorMessage(err)}
                 />
               </div>
             </div>
 
-            {/* Bottom Row: Generated Spritesheet & Export Options */}
-            <div className="pt-4 border-t-2 border-black dark:border-zinc-800">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2">
-                  <Grid className="w-4 h-4 text-black dark:text-white" />
-                  <h2 className="text-xs font-black text-zinc-900 dark:text-zinc-100 uppercase tracking-wider">
-                    Generated Spritesheet & Animation Atlas
-                  </h2>
-                </div>
-
-                {generatedSpritesheet && (
-                  <Button
-                    onClick={() => setActiveView('interactive')}
-                    variant="glow"
-                    size="sm"
-                  >
-                    <Sparkles className="w-3.5 h-3.5 text-black" />
-                    <span>Test Look-At Simulator</span>
-                  </Button>
-                )}
-              </div>
-
-              <SpritesheetPreview
-                spritesheet={generatedSpritesheet}
+            {/* Controls Accordion Sidebar */}
+            <div className="lg:col-span-5 xl:col-span-4 h-[480px]">
+              <ControlsPanel
+                sceneConfig={sceneConfig}
+                setSceneConfig={setSceneConfig}
                 spritesheetConfig={spritesheetConfig}
-                modelName={selectedModel.name}
+                setSpritesheetConfig={setSpritesheetConfig}
+                selectedModel={selectedModel}
+                setSelectedModel={setSelectedModel}
+                presets={presets}
+                onApplyPreset={handleApplyPreset}
+                onSaveNewPreset={handleSaveNewPreset}
+                onDeletePreset={handleDeletePreset}
+                onUploadCustomFile={handleUploadCustomFile}
               />
             </div>
           </div>
-        )}
 
-        {/* View 2: Interactive Mouse-Tracking Simulator */}
-        {activeView === 'interactive' && (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between pb-2 border-b-2 border-black dark:border-zinc-800">
-              <div>
-                <h2 className="text-sm font-black text-zinc-900 dark:text-zinc-100 uppercase tracking-tight flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 text-amber-500" />
-                  <span>Interactive Mouse Cursor Look-At Simulator</span>
+          {/* Bottom Row: Generated Spritesheet & Export Options */}
+          <div className="pt-4 border-t-2 border-black dark:border-zinc-800">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <Grid className="w-4 h-4 text-black dark:text-white" />
+                <h2 className="text-xs font-black text-zinc-900 dark:text-zinc-100 uppercase tracking-wider">
+                  Generated Spritesheet & Animation Atlas
                 </h2>
-                <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-0.5 font-medium">
-                  Test how your generated spritesheet responds dynamically to mouse movement across screen angles.
-                </p>
               </div>
 
-              <Button
-                onClick={() => setActiveView('studio')}
-                variant="outline"
-                size="sm"
-              >
-                Back to 3D Viewport
-              </Button>
+              {generatedSpritesheet && (
+                <Button
+                  onClick={() => setActiveView('interactive')}
+                  variant="glow"
+                  size="sm"
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-black" />
+                  <span>Test Look-At Simulator</span>
+                </Button>
+              )}
             </div>
 
-            <InteractiveLookAtDemo
+            <SpritesheetPreview
               spritesheet={generatedSpritesheet}
               spritesheetConfig={spritesheetConfig}
+              modelName={selectedModel.name}
             />
           </div>
-        )}
+        </div>
+
+        {/* View 2: Interactive Mouse-Tracking Simulator */}
+        <div className={activeView === 'interactive' ? 'space-y-4' : 'hidden'}>
+          <div className="flex items-center justify-between pb-2 border-b-2 border-black dark:border-zinc-800">
+            <div>
+              <h2 className="text-sm font-black text-zinc-900 dark:text-zinc-100 uppercase tracking-tight flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-amber-500" />
+                <span>Interactive Mouse Cursor Look-At Simulator</span>
+              </h2>
+              <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-0.5 font-medium">
+                Test how your generated spritesheet responds dynamically to mouse movement across screen angles.
+              </p>
+            </div>
+
+            <Button
+              onClick={() => setActiveView('studio')}
+              variant="outline"
+              size="sm"
+            >
+              Back to 3D Viewport
+            </Button>
+          </div>
+
+          <InteractiveLookAtDemo
+            spritesheet={generatedSpritesheet}
+            spritesheetConfig={spritesheetConfig}
+          />
+        </div>
       </main>
     </div>
   );

@@ -1,35 +1,35 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
+  EnvironmentPresetType,
   LayoutType,
   ModelAsset,
   Preset,
   RotationAxis,
   SceneConfig,
   SpritesheetConfig,
-} from '../types';
+} from "../types";
+import { Camera, Sliders, Upload, Box, Plus, Trash2, Grid } from "lucide-react";
+import { Card } from "./ui/card";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "./ui/tabs";
+import { Button } from "./ui/button";
+import { Input } from "./ui/input";
+import { Switch } from "./ui/switch";
+import { Badge } from "./ui/badge";
+import { Slider } from "./ui/slider";
 import {
-  Camera,
-  Sliders,
-  Upload,
-  Box,
-  Plus,
-  Trash2,
-  Grid,
-} from 'lucide-react';
-import { Card } from './ui/card';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from './ui/tabs';
-import { Button } from './ui/button';
-import { Input } from './ui/input';
-import { Switch } from './ui/switch';
-import { Badge } from './ui/badge';
-import { Slider } from './ui/slider';
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./ui/select";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from './ui/dialog';
+} from "./ui/dialog";
 
 interface ControlsPanelProps {
   sceneConfig: SceneConfig;
@@ -58,43 +58,39 @@ export function ControlsPanel({
   onDeletePreset,
   onUploadCustomFile,
 }: ControlsPanelProps) {
-  const [activeTab, setActiveTab] = useState<string>('spritesheet');
+  const [activeTab, setActiveTab] = useState<string>("spritesheet");
   const [showSaveModal, setShowSaveModal] = useState<boolean>(false);
-  const [newPresetName, setNewPresetName] = useState<string>('');
-  const [newPresetDesc, setNewPresetDesc] = useState<string>('');
+  const [newPresetName, setNewPresetName] = useState<string>("");
+  const [newPresetDesc, setNewPresetDesc] = useState<string>("");
 
   const sampleModels: ModelAsset[] = [
     {
-      id: 'sample-robot',
-      name: 'Cyber Robot Head',
-      type: 'sample',
-      sampleType: 'robot_head',
-      url: '',
-      format: 'procedural',
+      id: "model-gman",
+      name: "G-Man Head",
+      type: "custom",
+      url: "/gman_head_rigged.glb",
+      format: "glb",
     },
     {
-      id: 'sample-helmet',
-      name: 'Sci-Fi Helmet',
-      type: 'sample',
-      sampleType: 'helmet',
-      url: '',
-      format: 'procedural',
+      id: "model-male-head",
+      name: "Male Head",
+      type: "custom",
+      url: "/male_head.glb",
+      format: "glb",
     },
     {
-      id: 'sample-alien',
-      name: 'Cute Alien Creature',
-      type: 'sample',
-      sampleType: 'coin',
-      url: '',
-      format: 'procedural',
+      id: "model-scruffy-head",
+      name: "Scruffy's Head",
+      type: "custom",
+      url: "/scruffys_head.glb",
+      format: "glb",
     },
     {
-      id: 'sample-gem',
-      name: 'Crystal Gem',
-      type: 'sample',
-      sampleType: 'gem',
-      url: '',
-      format: 'procedural',
+      id: "model-wario-face",
+      name: "Wario Face",
+      type: "custom",
+      url: "/wario_face.glb",
+      format: "glb",
     },
   ];
 
@@ -108,8 +104,8 @@ export function ControlsPanel({
     e.preventDefault();
     if (!newPresetName.trim()) return;
     onSaveNewPreset(newPresetName.trim(), newPresetDesc.trim());
-    setNewPresetName('');
-    setNewPresetDesc('');
+    setNewPresetName("");
+    setNewPresetDesc("");
     setShowSaveModal(false);
   };
 
@@ -150,13 +146,19 @@ export function ControlsPanel({
                 Layout Arrangement
               </label>
               <div className="grid grid-cols-3 gap-2">
-                {(['grid', 'row', 'column'] as LayoutType[]).map((layout) => (
+                {(["grid", "row", "column"] as LayoutType[]).map((layout) => (
                   <Button
                     key={layout}
                     type="button"
-                    variant={spritesheetConfig.layout === layout ? 'default' : 'outline'}
+                    variant={
+                      spritesheetConfig.layout === layout
+                        ? "default"
+                        : "outline"
+                    }
                     size="sm"
-                    onClick={() => setSpritesheetConfig({ ...spritesheetConfig, layout })}
+                    onClick={() =>
+                      setSpritesheetConfig({ ...spritesheetConfig, layout })
+                    }
                     className="capitalize text-center"
                   >
                     {layout}
@@ -168,9 +170,12 @@ export function ControlsPanel({
             {/* Frame Resolution */}
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label className="text-zinc-900 dark:text-zinc-100 font-bold uppercase tracking-wider text-[11px]">Cell Resolution (px)</label>
+                <label className="text-zinc-900 dark:text-zinc-100 font-bold uppercase tracking-wider text-[11px]">
+                  Cell Resolution (px)
+                </label>
                 <span className="text-zinc-900 dark:text-zinc-100 font-mono font-bold bg-zinc-200 dark:bg-zinc-800 px-1.5 py-0.5 rounded border border-black dark:border-zinc-700">
-                  {spritesheetConfig.frameWidth} x {spritesheetConfig.frameHeight}
+                  {spritesheetConfig.frameWidth} x{" "}
+                  {spritesheetConfig.frameHeight}
                 </span>
               </div>
               <div className="grid grid-cols-4 gap-2">
@@ -178,7 +183,11 @@ export function ControlsPanel({
                   <Button
                     key={res}
                     type="button"
-                    variant={spritesheetConfig.frameWidth === res ? 'default' : 'outline'}
+                    variant={
+                      spritesheetConfig.frameWidth === res
+                        ? "default"
+                        : "outline"
+                    }
                     size="sm"
                     onClick={() =>
                       setSpritesheetConfig({
@@ -196,10 +205,12 @@ export function ControlsPanel({
             </div>
 
             {/* Grid Matrix Dimensions */}
-            {spritesheetConfig.layout === 'grid' && (
+            {spritesheetConfig.layout === "grid" && (
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-zinc-900 dark:text-zinc-100 font-bold uppercase tracking-wider mb-1 text-[11px]">Columns</label>
+                  <label className="block text-zinc-900 dark:text-zinc-100 font-bold uppercase tracking-wider mb-1 text-[11px]">
+                    Columns
+                  </label>
                   <Input
                     type="number"
                     min={1}
@@ -218,7 +229,9 @@ export function ControlsPanel({
                 </div>
 
                 <div>
-                  <label className="block text-zinc-900 dark:text-zinc-100 font-bold uppercase tracking-wider mb-1 text-[11px]">Rows</label>
+                  <label className="block text-zinc-900 dark:text-zinc-100 font-bold uppercase tracking-wider mb-1 text-[11px]">
+                    Rows
+                  </label>
                   <Input
                     type="number"
                     min={1}
@@ -239,11 +252,15 @@ export function ControlsPanel({
             )}
 
             {/* Total Frame Count for Row/Col */}
-            {spritesheetConfig.layout !== 'grid' && (
+            {spritesheetConfig.layout !== "grid" && (
               <div>
                 <div className="flex items-center justify-between mb-1.5">
-                  <label className="text-zinc-900 dark:text-zinc-100 font-bold uppercase tracking-wider text-[11px]">Total Frames</label>
-                  <span className="text-zinc-900 dark:text-zinc-100 font-mono font-bold text-sm">{spritesheetConfig.totalFrames}</span>
+                  <label className="text-zinc-900 dark:text-zinc-100 font-bold uppercase tracking-wider text-[11px]">
+                    Total Frames
+                  </label>
+                  <span className="text-zinc-900 dark:text-zinc-100 font-mono font-bold text-sm">
+                    {spritesheetConfig.totalFrames}
+                  </span>
                 </div>
                 <Slider
                   min={4}
@@ -281,14 +298,18 @@ export function ControlsPanel({
                 /* Multi-Axis Angle Range Sliders */
                 <div className="space-y-3 bg-zinc-100 dark:bg-zinc-900 p-3 rounded-lg border-2 border-black dark:border-zinc-700">
                   <p className="text-[11px] text-zinc-600 dark:text-zinc-400 font-medium leading-snug">
-                    Captures row pitch angle (looking up/down) and column yaw angle (looking left/right).
+                    Captures row pitch angle (looking up/down) and column yaw
+                    angle (looking left/right).
                   </p>
 
                   <div>
                     <div className="flex justify-between text-[11px] mb-1">
-                      <span className="text-zinc-900 dark:text-zinc-100 font-bold">Row Pitch Range (X-Axis Look Up/Down)</span>
+                      <span className="text-zinc-900 dark:text-zinc-100 font-bold">
+                        Row Pitch Range (X-Axis Look Up/Down)
+                      </span>
                       <span className="font-mono font-bold text-black dark:text-white">
-                        {spritesheetConfig.gridMultiAxis.pitchRange.start}° to {spritesheetConfig.gridMultiAxis.pitchRange.end}°
+                        {spritesheetConfig.gridMultiAxis.pitchRange.start}° to{" "}
+                        {spritesheetConfig.gridMultiAxis.pitchRange.end}°
                       </span>
                     </div>
                     <div className="grid grid-cols-2 gap-2">
@@ -331,9 +352,12 @@ export function ControlsPanel({
 
                   <div>
                     <div className="flex justify-between text-[11px] mb-1">
-                      <span className="text-zinc-900 dark:text-zinc-100 font-bold">Col Yaw Range (Y-Axis Look Left/Right)</span>
+                      <span className="text-zinc-900 dark:text-zinc-100 font-bold">
+                        Col Yaw Range (Y-Axis Look Left/Right)
+                      </span>
                       <span className="font-mono font-bold text-black dark:text-white">
-                        {spritesheetConfig.gridMultiAxis.yawRange.start}° to {spritesheetConfig.gridMultiAxis.yawRange.end}°
+                        {spritesheetConfig.gridMultiAxis.yawRange.start}° to{" "}
+                        {spritesheetConfig.gridMultiAxis.yawRange.end}°
                       </span>
                     </div>
                     <div className="grid grid-cols-2 gap-2">
@@ -378,13 +402,19 @@ export function ControlsPanel({
                 /* Single-Axis Spin Controls */
                 <div className="space-y-3 bg-zinc-100 dark:bg-zinc-900 p-3 rounded-lg border-2 border-black dark:border-zinc-700">
                   <div>
-                    <label className="block text-zinc-900 dark:text-zinc-100 font-bold mb-1 uppercase text-[11px]">Rotation Axis</label>
+                    <label className="block text-zinc-900 dark:text-zinc-100 font-bold mb-1 uppercase text-[11px]">
+                      Rotation Axis
+                    </label>
                     <div className="grid grid-cols-3 gap-2">
-                      {(['Y', 'X', 'Z'] as RotationAxis[]).map((axis) => (
+                      {(["Y", "X", "Z"] as RotationAxis[]).map((axis) => (
                         <Button
                           key={axis}
                           type="button"
-                          variant={spritesheetConfig.singleAxis === axis ? 'default' : 'outline'}
+                          variant={
+                            spritesheetConfig.singleAxis === axis
+                              ? "default"
+                              : "outline"
+                          }
                           size="sm"
                           onClick={() =>
                             setSpritesheetConfig({
@@ -402,9 +432,12 @@ export function ControlsPanel({
 
                   <div>
                     <div className="flex justify-between text-[11px] mb-1">
-                      <span className="text-zinc-900 dark:text-zinc-100 font-bold">Rotation Angle Span</span>
+                      <span className="text-zinc-900 dark:text-zinc-100 font-bold">
+                        Rotation Angle Span
+                      </span>
                       <span className="font-mono font-bold text-black dark:text-white">
-                        {spritesheetConfig.singleAxisRange.start}° to {spritesheetConfig.singleAxisRange.end}°
+                        {spritesheetConfig.singleAxisRange.start}° to{" "}
+                        {spritesheetConfig.singleAxisRange.end}°
                       </span>
                     </div>
                     <div className="grid grid-cols-2 gap-2">
@@ -446,7 +479,7 @@ export function ControlsPanel({
             <div className="pt-3 border-t-2 border-black dark:border-zinc-800 flex items-center justify-between text-zinc-600 dark:text-zinc-400 font-mono text-xs">
               <span className="font-bold uppercase">Atlas Dimensions:</span>
               <span className="font-bold text-black dark:text-white bg-amber-400 text-black px-2 py-0.5 rounded border border-black font-mono">
-                {spritesheetConfig.columns * spritesheetConfig.frameWidth} x{' '}
+                {spritesheetConfig.columns * spritesheetConfig.frameWidth} x{" "}
                 {spritesheetConfig.rows * spritesheetConfig.frameHeight} px
               </span>
             </div>
@@ -454,70 +487,397 @@ export function ControlsPanel({
 
           {/* TAB 2: SCENE & LIGHTING */}
           <TabsContent value="scene" className="space-y-4 m-0">
+            <div className="flex items-center justify-between pb-1 border-b border-zinc-200 dark:border-zinc-800">
+              <span className="text-xs font-black uppercase tracking-wider text-zinc-900 dark:text-zinc-100">
+                Camera & Perspective
+              </span>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() =>
+                  setSceneConfig({
+                    ...sceneConfig,
+                    zoom: 1.0,
+                    pitchOffset: 0,
+                    yawOffset: 0,
+                  })
+                }
+                className="h-6 text-[10px] px-2 font-bold uppercase text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white"
+                title="Reset Camera Zoom to 1.0x and Elevation to 0°"
+              >
+                Reset Camera
+              </Button>
+            </div>
+
             {/* Camera Zoom */}
             <div>
               <div className="flex justify-between mb-1.5">
-                <label className="text-zinc-900 dark:text-zinc-100 font-bold uppercase tracking-wider text-[11px]">Camera Distance / Zoom</label>
-                <span className="font-mono font-bold text-black dark:text-white text-xs">{sceneConfig.zoom.toFixed(2)}x</span>
+                <label className="text-zinc-900 dark:text-zinc-100 font-bold uppercase tracking-wider text-[11px]">
+                  Camera Distance / Zoom
+                </label>
+                <span className="font-mono font-bold text-black dark:text-white text-xs">
+                  {sceneConfig.zoom.toFixed(2)}x
+                </span>
               </div>
               <Slider
                 min={0.5}
                 max={2.5}
                 step={0.05}
                 value={[sceneConfig.zoom]}
-                onValueChange={([val]) => setSceneConfig({ ...sceneConfig, zoom: val })}
+                onValueChange={([val]) =>
+                  setSceneConfig({ ...sceneConfig, zoom: val })
+                }
               />
             </div>
 
             {/* Elevation / Pitch Offset */}
             <div>
               <div className="flex justify-between mb-1.5">
-                <label className="text-zinc-900 dark:text-zinc-100 font-bold uppercase tracking-wider text-[11px]">Camera Elevation Angle</label>
-                <span className="font-mono font-bold text-black dark:text-white text-xs">{sceneConfig.pitchOffset}°</span>
+                <label className="text-zinc-900 dark:text-zinc-100 font-bold uppercase tracking-wider text-[11px]">
+                  Camera Elevation Angle
+                </label>
+                <span className="font-mono font-bold text-black dark:text-white text-xs">
+                  {sceneConfig.pitchOffset}°
+                </span>
               </div>
               <Slider
                 min={-60}
                 max={60}
                 step={1}
                 value={[sceneConfig.pitchOffset]}
-                onValueChange={([val]) => setSceneConfig({ ...sceneConfig, pitchOffset: val })}
+                onValueChange={([val]) =>
+                  setSceneConfig({ ...sceneConfig, pitchOffset: val })
+                }
               />
             </div>
 
-            {/* Lighting Intensity */}
+            {/* Environment Preset Selector */}
             <div>
-              <div className="flex justify-between mb-1.5">
-                <label className="text-zinc-900 dark:text-zinc-100 font-bold uppercase tracking-wider text-[11px]">Directional Light Intensity</label>
-                <span className="font-mono font-bold text-black dark:text-white text-xs">{sceneConfig.lightIntensity.toFixed(1)}</span>
-              </div>
-              <Slider
-                min={0}
-                max={4.0}
-                step={0.1}
-                value={[sceneConfig.lightIntensity]}
-                onValueChange={([val]) => setSceneConfig({ ...sceneConfig, lightIntensity: val })}
+              <label className="block text-zinc-900 dark:text-zinc-100 font-bold uppercase tracking-wider text-[11px] mb-1.5">
+                HDRI Environment Preset
+              </label>
+              <Select
+                value={sceneConfig.environmentPreset || "city"}
+                onValueChange={(val: EnvironmentPresetType) =>
+                  setSceneConfig({ ...sceneConfig, environmentPreset: val })
+                }
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select Environment" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="city">City (Urban Outdoor)</SelectItem>
+                  <SelectItem value="studio">Studio (Soft Lighting)</SelectItem>
+                  <SelectItem value="apartment">
+                    Apartment (Warm Interior)
+                  </SelectItem>
+                  <SelectItem value="dawn">Dawn (Warm Horizon)</SelectItem>
+                  <SelectItem value="forest">
+                    Forest (Natural Daylight)
+                  </SelectItem>
+                  <SelectItem value="lobby">Lobby (Architectural)</SelectItem>
+                  <SelectItem value="night">Night (Subtle Moody)</SelectItem>
+                  <SelectItem value="park">Park (Bright Outdoor)</SelectItem>
+                  <SelectItem value="sunset">Sunset (Golden Hour)</SelectItem>
+                  <SelectItem value="warehouse">
+                    Warehouse (Industrial)
+                  </SelectItem>
+                  <SelectItem value="none">
+                    None (Direct Lights Only)
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* 3D Light Helpers Toggle */}
+            <div className="pt-2 border-t-2 border-black dark:border-zinc-800 flex items-center justify-between">
+              <span className="text-zinc-900 dark:text-zinc-100 font-bold uppercase text-[11px] tracking-wider">
+                Show 3D Light Helpers / Gizmos
+              </span>
+              <Switch
+                checked={sceneConfig.showLightHelpers ?? false}
+                onCheckedChange={(checked) =>
+                  setSceneConfig({ ...sceneConfig, showLightHelpers: checked })
+                }
               />
             </div>
 
             {/* Ambient Intensity */}
             <div>
               <div className="flex justify-between mb-1.5">
-                <label className="text-zinc-900 dark:text-zinc-100 font-bold uppercase tracking-wider text-[11px]">Ambient Light Intensity</label>
-                <span className="font-mono font-bold text-black dark:text-white text-xs">{sceneConfig.ambientIntensity.toFixed(1)}</span>
+                <label className="text-zinc-900 dark:text-zinc-100 font-bold uppercase tracking-wider text-[11px]">
+                  Ambient Light Intensity
+                </label>
+                <span className="font-mono font-bold text-black dark:text-white text-xs">
+                  {sceneConfig.ambientIntensity.toFixed(1)}
+                </span>
               </div>
               <Slider
                 min={0}
                 max={2.0}
                 step={0.1}
                 value={[sceneConfig.ambientIntensity]}
-                onValueChange={([val]) => setSceneConfig({ ...sceneConfig, ambientIntensity: val })}
+                onValueChange={([val]) =>
+                  setSceneConfig({ ...sceneConfig, ambientIntensity: val })
+                }
               />
             </div>
+
+            {/* KEY LIGHT CONTROLS */}
+            {(() => {
+              const key = sceneConfig.keyLight || {
+                position: sceneConfig.lightPosition,
+                intensity: sceneConfig.lightIntensity,
+                color: sceneConfig.lightColor,
+                enabled: true,
+              };
+              return (
+                <div className="p-3 bg-zinc-100 dark:bg-zinc-900 rounded-lg border-2 border-black dark:border-zinc-700 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-xs uppercase text-zinc-900 dark:text-zinc-100">
+                      Key Light (Primary)
+                    </span>
+                    <input
+                      type="color"
+                      value={key.color}
+                      onChange={(e) => {
+                        const newKey = { ...key, color: e.target.value };
+                        setSceneConfig({
+                          ...sceneConfig,
+                          keyLight: newKey,
+                          lightColor: e.target.value,
+                        });
+                      }}
+                      className="w-6 h-6 rounded border border-black dark:border-white cursor-pointer bg-transparent"
+                    />
+                  </div>
+
+                  <div>
+                    <div className="flex justify-between mb-1 text-[11px]">
+                      <span className="font-semibold text-zinc-700 dark:text-zinc-300">Intensity</span>
+                      <span className="font-mono font-bold">{key.intensity.toFixed(1)}</span>
+                    </div>
+                    <Slider
+                      min={0}
+                      max={5.0}
+                      step={0.1}
+                      value={[key.intensity]}
+                      onValueChange={([val]) => {
+                        const newKey = { ...key, intensity: val };
+                        setSceneConfig({
+                          ...sceneConfig,
+                          keyLight: newKey,
+                          lightIntensity: val,
+                        });
+                      }}
+                    />
+                  </div>
+
+                  {/* Position X, Y, Z */}
+                  <div className="space-y-2 pt-1">
+                    <span className="text-[10px] font-bold uppercase text-zinc-500 tracking-wider">Position [X, Y, Z]</span>
+                    {(['X', 'Y', 'Z'] as const).map((axis, i) => (
+                      <div key={axis} className="flex items-center gap-2 text-xs">
+                        <span className="font-mono font-bold w-4">{axis}:</span>
+                        <Slider
+                          min={-20}
+                          max={20}
+                          step={0.5}
+                          value={[key.position[i]]}
+                          onValueChange={([val]) => {
+                            const newPos = [...key.position] as [number, number, number];
+                            newPos[i] = val;
+                            const newKey = { ...key, position: newPos };
+                            setSceneConfig({
+                              ...sceneConfig,
+                              keyLight: newKey,
+                              lightPosition: newPos,
+                            });
+                          }}
+                          className="flex-1"
+                        />
+                        <span className="font-mono text-[11px] w-8 text-right font-bold">{key.position[i]}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })()}
+
+            {/* FILL LIGHT CONTROLS */}
+            {(() => {
+              const fill = sceneConfig.fillLight || {
+                position: [
+                  -sceneConfig.lightPosition[0],
+                  sceneConfig.lightPosition[1],
+                  -sceneConfig.lightPosition[2],
+                ],
+                intensity: sceneConfig.ambientIntensity * 0.4,
+                color: "#ffffff",
+                enabled: true,
+              };
+              return (
+                <div className="p-3 bg-zinc-100 dark:bg-zinc-900 rounded-lg border-2 border-black dark:border-zinc-700 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-xs uppercase text-zinc-900 dark:text-zinc-100">
+                      Fill Light (Secondary)
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="color"
+                        value={fill.color}
+                        onChange={(e) => {
+                          const newFill = { ...fill, color: e.target.value };
+                          setSceneConfig({ ...sceneConfig, fillLight: newFill });
+                        }}
+                        className="w-6 h-6 rounded border border-black dark:border-white cursor-pointer bg-transparent"
+                      />
+                      <Switch
+                        checked={fill.enabled}
+                        onCheckedChange={(checked) => {
+                          const newFill = { ...fill, enabled: checked };
+                          setSceneConfig({ ...sceneConfig, fillLight: newFill });
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  {fill.enabled && (
+                    <>
+                      <div>
+                        <div className="flex justify-between mb-1 text-[11px]">
+                          <span className="font-semibold text-zinc-700 dark:text-zinc-300">Intensity</span>
+                          <span className="font-mono font-bold">{fill.intensity.toFixed(1)}</span>
+                        </div>
+                        <Slider
+                          min={0}
+                          max={5.0}
+                          step={0.1}
+                          value={[fill.intensity]}
+                          onValueChange={([val]) => {
+                            const newFill = { ...fill, intensity: val };
+                            setSceneConfig({ ...sceneConfig, fillLight: newFill });
+                          }}
+                        />
+                      </div>
+
+                      {/* Position X, Y, Z */}
+                      <div className="space-y-2 pt-1">
+                        <span className="text-[10px] font-bold uppercase text-zinc-500 tracking-wider">Position [X, Y, Z]</span>
+                        {(['X', 'Y', 'Z'] as const).map((axis, i) => (
+                          <div key={axis} className="flex items-center gap-2 text-xs">
+                            <span className="font-mono font-bold w-4">{axis}:</span>
+                            <Slider
+                              min={-20}
+                              max={20}
+                              step={0.5}
+                              value={[fill.position[i]]}
+                              onValueChange={([val]) => {
+                                const newPos = [...fill.position] as [number, number, number];
+                                newPos[i] = val;
+                                const newFill = { ...fill, position: newPos };
+                                setSceneConfig({ ...sceneConfig, fillLight: newFill });
+                              }}
+                              className="flex-1"
+                            />
+                            <span className="font-mono text-[11px] w-8 text-right font-bold">{fill.position[i]}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </div>
+              );
+            })()}
+
+            {/* RIM LIGHT CONTROLS */}
+            {(() => {
+              const rim = sceneConfig.rimLight || {
+                position: [0, -5, -5],
+                intensity: 0.8,
+                color: "#f472b6",
+                enabled: false,
+              };
+              return (
+                <div className="p-3 bg-zinc-100 dark:bg-zinc-900 rounded-lg border-2 border-black dark:border-zinc-700 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-xs uppercase text-zinc-900 dark:text-zinc-100">
+                      Rim / Accent Light
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="color"
+                        value={rim.color}
+                        onChange={(e) => {
+                          const newRim = { ...rim, color: e.target.value };
+                          setSceneConfig({ ...sceneConfig, rimLight: newRim });
+                        }}
+                        className="w-6 h-6 rounded border border-black dark:border-white cursor-pointer bg-transparent"
+                      />
+                      <Switch
+                        checked={rim.enabled}
+                        onCheckedChange={(checked) => {
+                          const newRim = { ...rim, enabled: checked };
+                          setSceneConfig({ ...sceneConfig, rimLight: newRim });
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  {rim.enabled && (
+                    <>
+                      <div>
+                        <div className="flex justify-between mb-1 text-[11px]">
+                          <span className="font-semibold text-zinc-700 dark:text-zinc-300">Intensity</span>
+                          <span className="font-mono font-bold">{rim.intensity.toFixed(1)}</span>
+                        </div>
+                        <Slider
+                          min={0}
+                          max={5.0}
+                          step={0.1}
+                          value={[rim.intensity]}
+                          onValueChange={([val]) => {
+                            const newRim = { ...rim, intensity: val };
+                            setSceneConfig({ ...sceneConfig, rimLight: newRim });
+                          }}
+                        />
+                      </div>
+
+                      {/* Position X, Y, Z */}
+                      <div className="space-y-2 pt-1">
+                        <span className="text-[10px] font-bold uppercase text-zinc-500 tracking-wider">Position [X, Y, Z]</span>
+                        {(['X', 'Y', 'Z'] as const).map((axis, i) => (
+                          <div key={axis} className="flex items-center gap-2 text-xs">
+                            <span className="font-mono font-bold w-4">{axis}:</span>
+                            <Slider
+                              min={-20}
+                              max={20}
+                              step={0.5}
+                              value={[rim.position[i]]}
+                              onValueChange={([val]) => {
+                                const newPos = [...rim.position] as [number, number, number];
+                                newPos[i] = val;
+                                const newRim = { ...rim, position: newPos };
+                                setSceneConfig({ ...sceneConfig, rimLight: newRim });
+                              }}
+                              className="flex-1"
+                            />
+                            <span className="font-mono text-[11px] w-8 text-right font-bold">{rim.position[i]}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </div>
+              );
+            })()}
 
             {/* Background Settings */}
             <div className="pt-3 border-t-2 border-black dark:border-zinc-800 space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-zinc-900 dark:text-zinc-100 font-bold uppercase text-[11px] tracking-wider">Transparent Background</span>
+                <span className="text-zinc-900 dark:text-zinc-100 font-bold uppercase text-[11px] tracking-wider">
+                  Transparent Background
+                </span>
                 <Switch
                   checked={sceneConfig.transparentBg}
                   onCheckedChange={(checked) =>
@@ -528,12 +888,17 @@ export function ControlsPanel({
 
               {!sceneConfig.transparentBg && (
                 <div className="flex items-center justify-between pt-1">
-                  <span className="text-zinc-900 dark:text-zinc-100 font-bold text-xs">Background Color</span>
+                  <span className="text-zinc-900 dark:text-zinc-100 font-bold text-xs">
+                    Background Color
+                  </span>
                   <input
                     type="color"
                     value={sceneConfig.backgroundColor}
                     onChange={(e) =>
-                      setSceneConfig({ ...sceneConfig, backgroundColor: e.target.value })
+                      setSceneConfig({
+                        ...sceneConfig,
+                        backgroundColor: e.target.value,
+                      })
                     }
                     className="w-8 h-8 rounded border-2 border-black dark:border-white bg-transparent cursor-pointer"
                   />
@@ -543,19 +908,25 @@ export function ControlsPanel({
 
             {/* Material Overrides */}
             <div className="pt-3 border-t-2 border-black dark:border-zinc-800">
-              <label className="block text-zinc-900 dark:text-zinc-100 font-bold uppercase tracking-wider mb-2 text-[11px]">Material Shading Override</label>
+              <label className="block text-zinc-900 dark:text-zinc-100 font-bold uppercase tracking-wider mb-2 text-[11px]">
+                Material Shading Override
+              </label>
               <div className="grid grid-cols-2 gap-2">
                 {[
-                  { id: 'default', label: 'Default Material' },
-                  { id: 'clay', label: 'Clay Claymation' },
-                  { id: 'metal', label: 'Chrome Metal' },
-                  { id: 'toon', label: 'Stylized Toon' },
-                  { id: 'wireframe', label: 'Wireframe' },
+                  { id: "default", label: "Default Material" },
+                  { id: "clay", label: "Clay Claymation" },
+                  { id: "metal", label: "Chrome Metal" },
+                  { id: "toon", label: "Stylized Toon" },
+                  { id: "wireframe", label: "Wireframe" },
                 ].map((mat) => (
                   <Button
                     key={mat.id}
                     type="button"
-                    variant={sceneConfig.materialOverride === mat.id ? 'default' : 'outline'}
+                    variant={
+                      sceneConfig.materialOverride === mat.id
+                        ? "default"
+                        : "outline"
+                    }
                     size="sm"
                     onClick={() =>
                       setSceneConfig({
@@ -575,7 +946,9 @@ export function ControlsPanel({
           {/* TAB 3: 3D ASSETS & UPLOAD */}
           <TabsContent value="model" className="space-y-4 m-0">
             <div>
-              <label className="block text-zinc-900 dark:text-zinc-100 font-bold uppercase tracking-wider mb-2 text-[11px]">Sample 3D Models</label>
+              <label className="block text-zinc-900 dark:text-zinc-100 font-bold uppercase tracking-wider mb-2 text-[11px]">
+                Sample 3D Models
+              </label>
               <div className="grid grid-cols-2 gap-2">
                 {sampleModels.map((sample) => {
                   const isSelected = selectedModel.id === sample.id;
@@ -585,11 +958,13 @@ export function ControlsPanel({
                       onClick={() => setSelectedModel(sample)}
                       className={`p-3 rounded-lg border-2 text-left flex flex-col justify-between transition-all cursor-pointer font-bold ${
                         isSelected
-                          ? 'bg-black text-white dark:bg-white dark:text-black border-black dark:border-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)]'
-                          : 'border-black dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-900 text-zinc-900 dark:text-zinc-200 hover:bg-zinc-200 dark:hover:bg-zinc-800'
+                          ? "bg-black text-white dark:bg-white dark:text-black border-black dark:border-white shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)]"
+                          : "border-black dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-900 text-zinc-900 dark:text-zinc-200 hover:bg-zinc-200 dark:hover:bg-zinc-800"
                       }`}
                     >
-                      <Box className={`w-5 h-5 mb-2 ${isSelected ? 'text-amber-400 dark:text-amber-600' : 'text-zinc-700 dark:text-zinc-300'}`} />
+                      <Box
+                        className={`w-5 h-5 mb-2 ${isSelected ? "text-amber-400 dark:text-amber-600" : "text-zinc-700 dark:text-zinc-300"}`}
+                      />
                       <span className="text-xs font-bold">{sample.name}</span>
                     </button>
                   );
@@ -598,7 +973,9 @@ export function ControlsPanel({
             </div>
 
             <div className="pt-3 border-t-2 border-black dark:border-zinc-800">
-              <label className="block text-zinc-900 dark:text-zinc-100 font-bold uppercase tracking-wider mb-2 text-[11px]">Upload Custom 3D Model</label>
+              <label className="block text-zinc-900 dark:text-zinc-100 font-bold uppercase tracking-wider mb-2 text-[11px]">
+                Upload Custom 3D Model
+              </label>
               <label className="flex flex-col items-center justify-center border-2 border-dashed border-black dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-xl p-6 cursor-pointer transition-all text-center group">
                 <Upload className="w-8 h-8 text-zinc-700 dark:text-zinc-400 group-hover:text-black dark:group-hover:text-white mb-2 transition-colors" />
                 <span className="text-xs font-bold text-zinc-900 dark:text-zinc-100 group-hover:underline">
@@ -615,7 +992,7 @@ export function ControlsPanel({
                 />
               </label>
 
-              {selectedModel.type === 'custom' && (
+              {selectedModel.type === "custom" && (
                 <div className="mt-3 p-3 bg-amber-400 text-black border-2 border-black rounded-lg flex items-center justify-between font-bold">
                   <div className="flex items-center gap-2">
                     <Box className="w-4 h-4" />
@@ -630,7 +1007,9 @@ export function ControlsPanel({
           {/* TAB 4: LOCAL PRESETS */}
           <TabsContent value="presets" className="space-y-4 m-0">
             <div className="flex items-center justify-between">
-              <span className="text-zinc-900 dark:text-zinc-100 font-bold uppercase tracking-wider text-[11px]">Saved Presets</span>
+              <span className="text-zinc-900 dark:text-zinc-100 font-bold uppercase tracking-wider text-[11px]">
+                Saved Presets
+              </span>
               <Button
                 size="sm"
                 variant="default"
@@ -647,7 +1026,10 @@ export function ControlsPanel({
                   key={preset.id}
                   className="p-3 bg-zinc-100 dark:bg-zinc-900 rounded-lg border-2 border-black dark:border-zinc-700 hover:border-black dark:hover:border-zinc-400 flex items-start justify-between gap-2 group transition-all shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,0.1)]"
                 >
-                  <div className="flex-1 cursor-pointer" onClick={() => onApplyPreset(preset)}>
+                  <div
+                    className="flex-1 cursor-pointer"
+                    onClick={() => onApplyPreset(preset)}
+                  >
                     <h4 className="text-xs font-bold text-zinc-900 dark:text-zinc-100 group-hover:underline">
                       {preset.name}
                     </h4>
@@ -667,17 +1049,18 @@ export function ControlsPanel({
                     >
                       Apply
                     </Button>
-                    {!preset.id.startsWith('preset-face') && !preset.id.startsWith('preset-360') && (
-                      <Button
-                        variant="destructive"
-                        size="icon"
-                        onClick={() => onDeletePreset(preset.id)}
-                        className="h-7 w-7 text-white"
-                        title="Delete Preset"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </Button>
-                    )}
+                    {!preset.id.startsWith("preset-face") &&
+                      !preset.id.startsWith("preset-360") && (
+                        <Button
+                          variant="destructive"
+                          size="icon"
+                          onClick={() => onDeletePreset(preset.id)}
+                          className="h-7 w-7 text-white"
+                          title="Delete Preset"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </Button>
+                      )}
                   </div>
                 </div>
               ))}
@@ -694,7 +1077,9 @@ export function ControlsPanel({
           </DialogHeader>
           <form onSubmit={handleSavePresetSubmit} className="space-y-4 pt-2">
             <div>
-              <label className="block text-xs font-bold text-zinc-900 dark:text-zinc-100 uppercase tracking-wider mb-1">Preset Name</label>
+              <label className="block text-xs font-bold text-zinc-900 dark:text-zinc-100 uppercase tracking-wider mb-1">
+                Preset Name
+              </label>
               <Input
                 type="text"
                 required
@@ -705,7 +1090,9 @@ export function ControlsPanel({
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-zinc-900 dark:text-zinc-100 uppercase tracking-wider mb-1">Description (Optional)</label>
+              <label className="block text-xs font-bold text-zinc-900 dark:text-zinc-100 uppercase tracking-wider mb-1">
+                Description (Optional)
+              </label>
               <Input
                 type="text"
                 placeholder="e.g. Optimized for Isometric RPG character"

@@ -3,6 +3,8 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { OBJLoader } from 'three/examples/jsm/loaders/OBJLoader.js';
 import { STLLoader } from 'three/examples/jsm/loaders/STLLoader.js';
 import { PLYLoader } from 'three/examples/jsm/loaders/PLYLoader.js';
+import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
+import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
 import gifshot from 'gifshot';
 import JSZip from 'jszip';
 import {
@@ -12,6 +14,19 @@ import {
   SceneConfig,
   SpritesheetConfig,
 } from '../types';
+
+const PRESET_URLS: Record<string, string> = {
+  apartment: 'https://raw.githack.com/pmndrs/drei-assets/456060a26bbeb8fdf79326f224b6d08cf2ee1a94/hdri/apartment.hdr',
+  city: 'https://raw.githack.com/pmndrs/drei-assets/456060a26bbeb8fdf79326f224b6d08cf2ee1a94/hdri/city.hdr',
+  dawn: 'https://raw.githack.com/pmndrs/drei-assets/456060a26bbeb8fdf79326f224b6d08cf2ee1a94/hdri/dawn.hdr',
+  forest: 'https://raw.githack.com/pmndrs/drei-assets/456060a26bbeb8fdf79326f224b6d08cf2ee1a94/hdri/forest.hdr',
+  lobby: 'https://raw.githack.com/pmndrs/drei-assets/456060a26bbeb8fdf79326f224b6d08cf2ee1a94/hdri/lobby.hdr',
+  night: 'https://raw.githack.com/pmndrs/drei-assets/456060a26bbeb8fdf79326f224b6d08cf2ee1a94/hdri/night.hdr',
+  park: 'https://raw.githack.com/pmndrs/drei-assets/456060a26bbeb8fdf79326f224b6d08cf2ee1a94/hdri/park.hdr',
+  studio: 'https://raw.githack.com/pmndrs/drei-assets/456060a26bbeb8fdf79326f224b6d08cf2ee1a94/hdri/studio.hdr',
+  sunset: 'https://raw.githack.com/pmndrs/drei-assets/456060a26bbeb8fdf79326f224b6d08cf2ee1a94/hdri/sunset.hdr',
+  warehouse: 'https://raw.githack.com/pmndrs/drei-assets/456060a26bbeb8fdf79326f224b6d08cf2ee1a94/hdri/warehouse.hdr',
+};
 
 export async function generateSpritesheet(
   modelAsset: ModelAsset,
@@ -34,12 +49,18 @@ export async function generateSpritesheet(
     alpha: true,
     antialias: true,
     preserveDrawingBuffer: true,
+    premultipliedAlpha: false,
   });
 
   renderer.setSize(frameWidth, frameHeight, false);
   renderer.setPixelRatio(1);
   renderer.shadowMap.enabled = sceneConfig.shadows;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+  // Match R3F color space and tone mapping defaults
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.0;
 
   const scene = new THREE.Scene();
 
@@ -48,6 +69,35 @@ export async function generateSpritesheet(
     scene.background = new THREE.Color(sceneConfig.backgroundColor);
   } else {
     scene.background = null;
+  }
+
+  // Set up matching HDRI environment map
+  const envPreset = sceneConfig.environmentPreset ?? 'city';
+  let envTextureToDispose: THREE.Texture | null = null;
+
+  if (envPreset && envPreset !== 'none') {
+    const url = PRESET_URLS[envPreset];
+    if (url) {
+      try {
+        const rgbeLoader = new RGBELoader();
+        const texture = await rgbeLoader.loadAsync(url);
+        texture.mapping = THREE.EquirectangularReflectionMapping;
+        scene.environment = texture;
+        envTextureToDispose = texture;
+      } catch {
+        const pmremGenerator = new THREE.PMREMGenerator(renderer);
+        const envMap = pmremGenerator.fromScene(new RoomEnvironment()).texture;
+        scene.environment = envMap;
+        pmremGenerator.dispose();
+      }
+    } else {
+      const pmremGenerator = new THREE.PMREMGenerator(renderer);
+      const envMap = pmremGenerator.fromScene(new RoomEnvironment()).texture;
+      scene.environment = envMap;
+      pmremGenerator.dispose();
+    }
+  } else {
+    scene.environment = null;
   }
 
   // Camera setup
@@ -64,22 +114,52 @@ export async function generateSpritesheet(
   camera.lookAt(0, 0, 0);
 
   // Lights setup
+  const key = sceneConfig.keyLight || {
+    position: sceneConfig.lightPosition,
+    intensity: sceneConfig.lightIntensity,
+    color: sceneConfig.lightColor,
+    enabled: true,
+  };
+  const fill = sceneConfig.fillLight || {
+    position: [
+      -sceneConfig.lightPosition[0],
+      sceneConfig.lightPosition[1],
+      -sceneConfig.lightPosition[2],
+    ],
+    intensity: sceneConfig.ambientIntensity * 0.4,
+    color: '#ffffff',
+    enabled: true,
+  };
+  const rim = sceneConfig.rimLight || {
+    position: [0, -5, -5],
+    intensity: 0.8,
+    color: '#f472b6',
+    enabled: false,
+  };
+
   const ambientLight = new THREE.AmbientLight(0xffffff, sceneConfig.ambientIntensity);
   scene.add(ambientLight);
 
-  const dirLight = new THREE.DirectionalLight(
-    sceneConfig.lightColor,
-    sceneConfig.lightIntensity
-  );
-  dirLight.position.set(...sceneConfig.lightPosition);
-  dirLight.castShadow = sceneConfig.shadows;
-  dirLight.shadow.mapSize.width = 1024;
-  dirLight.shadow.mapSize.height = 1024;
-  scene.add(dirLight);
+  if (key.enabled) {
+    const keyDirLight = new THREE.DirectionalLight(key.color, key.intensity);
+    keyDirLight.position.set(...key.position);
+    keyDirLight.castShadow = sceneConfig.shadows;
+    keyDirLight.shadow.mapSize.width = 1024;
+    keyDirLight.shadow.mapSize.height = 1024;
+    scene.add(keyDirLight);
+  }
 
-  const fillLight = new THREE.DirectionalLight(0xffffff, sceneConfig.ambientIntensity * 0.5);
-  fillLight.position.set(-dirLight.position.x, dirLight.position.y, -dirLight.position.z);
-  scene.add(fillLight);
+  if (fill.enabled) {
+    const fillDirLight = new THREE.DirectionalLight(fill.color, fill.intensity);
+    fillDirLight.position.set(...fill.position);
+    scene.add(fillDirLight);
+  }
+
+  if (rim.enabled) {
+    const rimDirLight = new THREE.DirectionalLight(rim.color, rim.intensity);
+    rimDirLight.position.set(...rim.position);
+    scene.add(rimDirLight);
+  }
 
   if (onProgress) onProgress(15, 'Loading 3D Model into Offscreen Buffer...');
 
@@ -205,7 +285,207 @@ export async function generateSpritesheet(
   if (onProgress) onProgress(100, 'Spritesheet generation complete!');
 
   // Clean up renderer resources
+  if (envTextureToDispose) {
+    envTextureToDispose.dispose();
+  }
   renderer.dispose();
+
+  return {
+    dataUrl: finalDataUrl,
+    width: sheetWidth,
+    height: sheetHeight,
+    columns: finalCols,
+    rows: finalRows,
+    frameWidth,
+    frameHeight,
+    padding,
+    frames: capturedFrames,
+  };
+}
+
+// Live Scene Capture Function (Guarantees 100% pixel-perfect identity with 3D viewport canvas)
+export async function captureSpritesheetFromLiveScene(
+  scene: THREE.Scene,
+  gl: THREE.WebGLRenderer,
+  modelAsset: ModelAsset,
+  sceneConfig: SceneConfig,
+  spritesheetConfig: SpritesheetConfig,
+  onProgress?: (percent: number, statusText: string) => void
+): Promise<GeneratedSpritesheet> {
+  const { frameWidth, frameHeight, columns, rows, totalFrames, padding, layout, isMultiAxisGrid } =
+    spritesheetConfig;
+
+  if (onProgress) onProgress(5, 'Capturing from Live 3D Scene...');
+
+  // Find model group inside live scene
+  let modelGroup: THREE.Object3D | null = null;
+  scene.traverse((obj) => {
+    if (!modelGroup && (obj.name === 'modelGroup' || (obj.type === 'Group' && obj.children.length > 0))) {
+      if (obj.parent === scene || obj.parent?.type === 'Group') {
+        modelGroup = obj;
+      }
+    }
+  });
+
+  if (!modelGroup) {
+    scene.children.forEach((child) => {
+      if (child.type === 'Group' && !child.name.includes('Light') && !child.name.includes('Helper')) {
+        modelGroup = child;
+      }
+    });
+  }
+
+  // Backup original rotation & light helper visibility
+  const origRotation = modelGroup ? modelGroup.rotation.clone() : new THREE.Euler();
+  
+  // Hide light helpers & gizmos temporarily during capture
+  const hiddenHelpers: THREE.Object3D[] = [];
+  scene.traverse((obj) => {
+    if (obj.type.includes('Helper') || obj.name.includes('Helper') || obj.type === 'GizmoHelper') {
+      if (obj.visible) {
+        hiddenHelpers.push(obj);
+        obj.visible = false;
+      }
+    }
+  });
+
+  // Dedicated offscreen bake camera matching aspect ratio
+  const bakeCamera = new THREE.PerspectiveCamera(45, frameWidth / frameHeight, 0.1, 100);
+  const baseDist = 3.5 / sceneConfig.zoom;
+  const pitchRad = THREE.MathUtils.degToRad(sceneConfig.pitchOffset);
+  const yawRad = THREE.MathUtils.degToRad(sceneConfig.yawOffset);
+  
+  bakeCamera.position.x = baseDist * Math.sin(yawRad) * Math.cos(pitchRad);
+  bakeCamera.position.y = baseDist * Math.sin(pitchRad);
+  bakeCamera.position.z = baseDist * Math.cos(yawRad) * Math.cos(pitchRad);
+  bakeCamera.lookAt(0, 0, 0);
+
+  // Backup original renderer viewport size & pixel ratio
+  const origSize = new THREE.Vector2();
+  gl.getSize(origSize);
+  const origPixelRatio = gl.getPixelRatio();
+
+  // Temporarily resize renderer for frame resolution
+  gl.setSize(frameWidth, frameHeight, false);
+
+  let finalCols = columns;
+  let finalRows = rows;
+  if (layout === 'row') {
+    finalCols = totalFrames;
+    finalRows = 1;
+  } else if (layout === 'column') {
+    finalCols = 1;
+    finalRows = totalFrames;
+  }
+
+  const effectiveTotalFrames = Math.min(totalFrames, finalCols * finalRows);
+  const capturedFrames: CapturedFrame[] = [];
+
+  try {
+    for (let idx = 0; idx < effectiveTotalFrames; idx++) {
+      const r = Math.floor(idx / finalCols);
+      const c = idx % finalCols;
+
+      let pitchDeg = 0;
+      let yawDeg = 0;
+      let rollDeg = 0;
+
+      if (modelGroup) {
+        if (isMultiAxisGrid) {
+          const { pitchRange, yawRange } = spritesheetConfig.gridMultiAxis;
+          const pitchStep = finalRows > 1 ? (pitchRange.end - pitchRange.start) / (finalRows - 1) : 0;
+          const yawStep = finalCols > 1 ? (yawRange.end - yawRange.start) / (finalCols - 1) : 0;
+
+          pitchDeg = pitchRange.start + r * pitchStep;
+          yawDeg = yawRange.start + c * yawStep;
+
+          modelGroup.rotation.x = THREE.MathUtils.degToRad(pitchDeg);
+          modelGroup.rotation.y = THREE.MathUtils.degToRad(yawDeg);
+          modelGroup.rotation.z = 0;
+        } else {
+          const { singleAxis, singleAxisRange } = spritesheetConfig;
+          const rangeSpan = singleAxisRange.end - singleAxisRange.start;
+          const step = effectiveTotalFrames > 1 ? rangeSpan / effectiveTotalFrames : 0;
+          const angle = singleAxisRange.start + idx * step;
+
+          modelGroup.rotation.x = 0;
+          modelGroup.rotation.y = 0;
+          modelGroup.rotation.z = 0;
+
+          if (singleAxis === 'X') {
+            modelGroup.rotation.x = THREE.MathUtils.degToRad(angle);
+            pitchDeg = angle;
+          } else if (singleAxis === 'Y') {
+            modelGroup.rotation.y = THREE.MathUtils.degToRad(angle);
+            yawDeg = angle;
+          } else if (singleAxis === 'Z') {
+            modelGroup.rotation.z = THREE.MathUtils.degToRad(angle);
+            rollDeg = angle;
+          }
+        }
+      }
+
+      // Render frame using live scene & active environment map
+      gl.render(scene, bakeCamera);
+
+      // Copy frame pixels into 2D canvas
+      const frameCanvas = document.createElement('canvas');
+      frameCanvas.width = frameWidth;
+      frameCanvas.height = frameHeight;
+      const frameCtx = frameCanvas.getContext('2d')!;
+      frameCtx.drawImage(gl.domElement, 0, 0);
+
+      capturedFrames.push({
+        index: idx,
+        row: r,
+        col: c,
+        pitch: pitchDeg,
+        yaw: yawDeg,
+        roll: rollDeg,
+        dataUrl: frameCanvas.toDataURL('image/png'),
+        canvas: frameCanvas,
+      });
+
+      const progressPct = Math.floor((idx / effectiveTotalFrames) * 75);
+      if (onProgress) onProgress(progressPct, `Captured frame ${idx + 1}/${effectiveTotalFrames}`);
+    }
+  } finally {
+    // Restore rotation & helpers
+    if (modelGroup) {
+      modelGroup.rotation.copy(origRotation);
+    }
+    hiddenHelpers.forEach((h) => (h.visible = true));
+
+    // Restore gl renderer dimensions
+    gl.setSize(origSize.x, origSize.y, false);
+    gl.setPixelRatio(origPixelRatio);
+  }
+
+  if (onProgress) onProgress(85, 'Stitching Spritesheet Atlas...');
+
+  // Build combined Spritesheet Canvas
+  const sheetWidth = finalCols * frameWidth + (finalCols + 1) * padding;
+  const sheetHeight = finalRows * frameHeight + (finalRows + 1) * padding;
+
+  const sheetCanvas = document.createElement('canvas');
+  sheetCanvas.width = sheetWidth;
+  sheetCanvas.height = sheetHeight;
+  const sheetCtx = sheetCanvas.getContext('2d')!;
+
+  if (!sceneConfig.transparentBg) {
+    sheetCtx.fillStyle = sceneConfig.backgroundColor;
+    sheetCtx.fillRect(0, 0, sheetWidth, sheetHeight);
+  }
+
+  capturedFrames.forEach((frame) => {
+    const x = padding + frame.col * (frameWidth + padding);
+    const y = padding + frame.row * (frameHeight + padding);
+    sheetCtx.drawImage(frame.canvas, x, y, frameWidth, frameHeight);
+  });
+
+  const finalDataUrl = sheetCanvas.toDataURL('image/png');
+
+  if (onProgress) onProgress(100, 'Spritesheet generation complete!');
 
   return {
     dataUrl: finalDataUrl,
@@ -417,6 +697,40 @@ function createProceduralMesh(
   } else if (type === 'gem') {
     const gem = new THREE.Mesh(new THREE.OctahedronGeometry(1.1, 0), getMat('#10b981', 0.1, 0.2));
     container.add(gem);
+  } else if (type === 'coin' || type === 'alien' || type === 'creature') {
+    // Cute Alien Creature (Purple body, Pink cheeks, Gold horns)
+    const body = new THREE.Mesh(new THREE.SphereGeometry(0.9, 32, 32), getMat('#8b5cf6', 0.4, 0.1));
+    container.add(body);
+
+    const cheek1 = new THREE.Mesh(new THREE.SphereGeometry(0.25, 16, 16), getMat('#f472b6', 0.5, 0.0));
+    cheek1.position.set(-0.45, -0.2, 0.6);
+    container.add(cheek1);
+
+    const cheek2 = cheek1.clone();
+    cheek2.position.set(0.45, -0.2, 0.6);
+    container.add(cheek2);
+
+    const bigEye = new THREE.Mesh(new THREE.SphereGeometry(0.35, 24, 24), getMat('#ffffff', 0.1, 0.0));
+    bigEye.position.set(0, 0.2, 0.75);
+    container.add(bigEye);
+
+    const pupil = new THREE.Mesh(new THREE.SphereGeometry(0.15, 16, 16), getMat('#0f172a', 0.1, 0.0));
+    pupil.position.set(0, 0.2, 1.02);
+    container.add(pupil);
+
+    const snout = new THREE.Mesh(new THREE.SphereGeometry(0.15, 16, 16), getMat('#f472b6', 0.5, 0.0));
+    snout.position.set(0, -0.25, 0.8);
+    container.add(snout);
+
+    const horn1 = new THREE.Mesh(new THREE.ConeGeometry(0.15, 0.6, 16), getMat('#fbbf24', 0.3, 0.3));
+    horn1.position.set(-0.5, 0.8, -0.1);
+    horn1.rotation.set(0.2, 0, -0.3);
+    container.add(horn1);
+
+    const horn2 = new THREE.Mesh(new THREE.ConeGeometry(0.15, 0.6, 16), getMat('#fbbf24', 0.3, 0.3));
+    horn2.position.set(0.5, 0.8, -0.1);
+    horn2.rotation.set(0.2, 0, 0.3);
+    container.add(horn2);
   } else {
     // Default Torus Knot
     const knot = new THREE.Mesh(

@@ -245,9 +245,9 @@ export function SpritesheetPreview({
           </div>
 
           {/* Canvas Scroll Wrapper */}
-          <div className="overflow-auto max-h-[460px] flex items-center justify-center p-4 bg-zinc-100 dark:bg-zinc-900 rounded-lg border-2 border-black dark:border-zinc-800 custom-scrollbar relative">
+          <div className="overflow-auto max-h-[600px] min-h-[350px] p-6 bg-zinc-100 dark:bg-zinc-900 rounded-lg border-2 border-black dark:border-zinc-800 custom-scrollbar relative flex justify-center items-start">
             <div
-              className="relative transition-transform origin-center"
+              className="relative transition-transform origin-top"
               style={{ transform: `scale(${scale})` }}
             >
               <img

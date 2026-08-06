@@ -3,6 +3,13 @@ import { ModelAsset, Preset } from '../types';
 import { Sparkles, Upload, Box, RefreshCw, Grid, Sun, Moon } from 'lucide-react';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from './ui/select';
 
 interface NavbarProps {
   onGenerate: () => void;
@@ -101,24 +108,24 @@ export function Navbar({
           </Button>
 
           {/* Preset Quick Dropdown */}
-          <div className="relative hidden lg:block">
-            <select
-              onChange={(e) => {
-                const p = presets.find((pr) => pr.id === e.target.value);
+          <div className="hidden lg:block w-[170px]">
+            <Select
+              onValueChange={(presetId) => {
+                const p = presets.find((pr) => pr.id === presetId);
                 if (p) onSelectPreset(p);
               }}
-              defaultValue=""
-              className="bg-white dark:bg-zinc-950 border-2 border-black dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 text-xs rounded-md px-3 py-1.5 outline-none focus:border-black dark:focus:border-white font-mono cursor-pointer max-w-[170px]"
             >
-              <option value="" disabled>
-                Presets
-              </option>
-              {presets.map((preset) => (
-                <option key={preset.id} value={preset.id}>
-                  {preset.name}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger className="h-9">
+                <SelectValue placeholder="Presets" />
+              </SelectTrigger>
+              <SelectContent>
+                {presets.map((preset) => (
+                  <SelectItem key={preset.id} value={preset.id}>
+                    {preset.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           {/* Upload File Button */}

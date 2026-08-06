@@ -14,6 +14,26 @@ export interface GridMultiAxisConfig {
   yawRange: AxisRange;   // e.g. -180 to +180 or -60 to +60
 }
 
+export type EnvironmentPresetType =
+  | 'apartment'
+  | 'city'
+  | 'dawn'
+  | 'forest'
+  | 'lobby'
+  | 'night'
+  | 'park'
+  | 'studio'
+  | 'sunset'
+  | 'warehouse'
+  | 'none';
+
+export interface LightConfig {
+  position: [number, number, number];
+  intensity: number;
+  color: string;
+  enabled: boolean;
+}
+
 export interface SceneConfig {
   zoom: number;            // camera distance / fov factor
   pitchOffset: number;     // initial camera tilt angle
@@ -27,6 +47,11 @@ export interface SceneConfig {
   materialOverride: 'default' | 'wireframe' | 'clay' | 'metal' | 'toon';
   autoRotatePreview: boolean;
   shadows: boolean;
+  environmentPreset?: EnvironmentPresetType;
+  showLightHelpers?: boolean;
+  keyLight?: LightConfig;
+  fillLight?: LightConfig;
+  rimLight?: LightConfig;
 }
 
 export interface SpritesheetConfig {

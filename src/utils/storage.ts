@@ -13,6 +13,26 @@ export const DEFAULT_SCENE_CONFIG: SceneConfig = {
   materialOverride: 'default',
   autoRotatePreview: false,
   shadows: true,
+  environmentPreset: 'city',
+  showLightHelpers: true,
+  keyLight: {
+    position: [5, 10, 7.5],
+    intensity: 1.8,
+    color: '#ffffff',
+    enabled: true,
+  },
+  fillLight: {
+    position: [-5, 5, -7.5],
+    intensity: 0.5,
+    color: '#93c5fd',
+    enabled: true,
+  },
+  rimLight: {
+    position: [0, -5, -5],
+    intensity: 0.8,
+    color: '#f472b6',
+    enabled: false,
+  },
 };
 
 export const DEFAULT_SPRITESHEET_CONFIG: SpritesheetConfig = {

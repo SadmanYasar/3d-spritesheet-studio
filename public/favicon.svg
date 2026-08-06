@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <!-- Neo-brutalist Offset Shadow -->
+  <rect x="56" y="56" width="400" height="400" rx="72" fill="#000000"/>
+
+  <!-- Main Dark Container matching Navbar Logo -->
+  <rect x="32" y="32" width="400" height="400" rx="72" fill="#09090b" stroke="#ffffff" stroke-width="20"/>
+
+  <!-- Lucide Grid Icon matching Navbar -->
+  <g transform="translate(108, 108) scale(12)" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <rect width="7" height="7" x="3" y="3" rx="1.5" />
+    <rect width="7" height="7" x="14" y="3" rx="1.5" />
+    <rect width="7" height="7" x="14" y="14" rx="1.5" />
+    <rect width="7" height="7" x="3" y="14" rx="1.5" />
+  </g>
+</svg>
