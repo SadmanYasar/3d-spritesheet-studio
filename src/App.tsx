@@ -95,17 +95,27 @@ export default function App() {
 
       try {
         setIsGenerating(true);
-        const result = await generateSpritesheet(
-          selectedModel,
-          sceneConfig,
-          spritesheetConfig,
-          (pct, text) => {
+        let result;
+        if (bakerRef.current) {
+          result = await bakerRef.current(spritesheetConfig, (pct: number, text: string) => {
             if (!isCancelled) {
               setProgressPct(pct);
               setProgressText(text);
             }
-          }
-        );
+          });
+        } else {
+          result = await generateSpritesheet(
+            selectedModel,
+            sceneConfig,
+            spritesheetConfig,
+            (pct, text) => {
+              if (!isCancelled) {
+                setProgressPct(pct);
+                setProgressText(text);
+              }
+            }
+          );
+        }
         if (!isCancelled) {
           setGeneratedSpritesheet(result);
         }
@@ -131,15 +141,23 @@ export default function App() {
       setProgressPct(0);
       setProgressText('Starting render engine...');
 
-      const result = await generateSpritesheet(
-        selectedModel,
-        sceneConfig,
-        spritesheetConfig,
-        (pct, text) => {
+      let result;
+      if (bakerRef.current) {
+        result = await bakerRef.current(spritesheetConfig, (pct: number, text: string) => {
           setProgressPct(pct);
           setProgressText(text);
-        }
-      );
+        });
+      } else {
+        result = await generateSpritesheet(
+          selectedModel,
+          sceneConfig,
+          spritesheetConfig,
+          (pct, text) => {
+            setProgressPct(pct);
+            setProgressText(text);
+          }
+        );
+      }
 
       setGeneratedSpritesheet(result);
     } catch (err: any) {
