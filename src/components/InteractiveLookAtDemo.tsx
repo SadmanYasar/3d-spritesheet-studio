@@ -1,9 +1,13 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { GeneratedSpritesheet, InteractiveDemoConfig, SpritesheetConfig } from '../types';
-import { Copy, Check, MousePointer, Sparkles, Code } from 'lucide-react';
-import { Button } from './ui/button';
-import { Slider } from './ui/slider';
-import { Switch } from './ui/switch';
+import React, { useState, useEffect, useRef } from "react";
+import {
+  GeneratedSpritesheet,
+  InteractiveDemoConfig,
+  SpritesheetConfig,
+} from "../types";
+import { Copy, Check, MousePointer, Sparkles, Code } from "lucide-react";
+import { Button } from "./ui/button";
+import { Slider } from "./ui/slider";
+import { Switch } from "./ui/switch";
 
 interface InteractiveLookAtDemoProps {
   spritesheet: GeneratedSpritesheet | null;
@@ -16,17 +20,24 @@ export function InteractiveLookAtDemo({
 }: InteractiveLookAtDemoProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [activeFrameIndex, setActiveFrameIndex] = useState<number>(0);
-  const [mousePos, setMousePos] = useState<{ x: number; y: number; dist: number }>({
+  const [mousePos, setMousePos] = useState<{
+    x: number;
+    y: number;
+    dist: number;
+  }>({
     x: 0,
     y: 0,
     dist: 0,
   });
-  const [normalizedAngle, setNormalizedAngle] = useState<{ nx: number; ny: number }>({
+  const [normalizedAngle, setNormalizedAngle] = useState<{
+    nx: number;
+    ny: number;
+  }>({
     nx: 0,
     ny: 0,
   });
   const [copiedTab, setCopiedTab] = useState<string | null>(null);
-  const [codeType, setCodeType] = useState<'react' | 'js'>('react');
+  const [codeType, setCodeType] = useState<"react" | "js">("react");
 
   const [demoConfig, setDemoConfig] = useState<InteractiveDemoConfig>({
     sensitivity: 1.0,
@@ -88,27 +99,37 @@ export function InteractiveLookAtDemo({
       }
     };
 
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
   }, [spritesheet, demoConfig]);
 
   if (!spritesheet) {
     return (
       <div className="flex flex-col items-center justify-center h-80 bg-white dark:bg-zinc-950 rounded-xl border-2 border-black dark:border-zinc-800 p-6 text-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.15)]">
         <MousePointer className="w-12 h-12 text-zinc-400 dark:text-zinc-600 mb-3 animate-bounce" />
-        <h3 className="text-base font-black uppercase tracking-tight text-zinc-900 dark:text-zinc-100">No Spritesheet Captured Yet</h3>
+        <h3 className="text-base font-black uppercase tracking-tight text-zinc-900 dark:text-zinc-100">
+          No Spritesheet Captured Yet
+        </h3>
         <p className="text-xs text-zinc-600 dark:text-zinc-400 max-w-md mt-1 font-medium">
-          Click "Bake Spritesheet" first to render your 3D model into an interactive 2D look-at avatar!
+          Click "Bake Spritesheet" first to render your 3D model into an
+          interactive 2D look-at avatar!
         </p>
       </div>
     );
   }
 
-  const currentFrame = spritesheet.frames[activeFrameIndex] || spritesheet.frames[0];
+  const currentFrame =
+    spritesheet.frames[activeFrameIndex] || spritesheet.frames[0];
 
   // Calculate background image offset for sprite display
-  const bgX = - (spritesheet.padding + currentFrame.col * (spritesheet.frameWidth + spritesheet.padding));
-  const bgY = - (spritesheet.padding + currentFrame.row * (spritesheet.frameHeight + spritesheet.padding));
+  const bgX = -(
+    spritesheet.padding +
+    currentFrame.col * (spritesheet.frameWidth + spritesheet.padding)
+  );
+  const bgY = -(
+    spritesheet.padding +
+    currentFrame.row * (spritesheet.frameHeight + spritesheet.padding)
+  );
 
   const copyToClipboard = (codeText: string, tabKey: string) => {
     navigator.clipboard.writeText(codeText);
@@ -211,7 +232,6 @@ window.addEventListener('mousemove', (e) => {
         />
 
         <div className="absolute top-4 left-4 flex items-center gap-2 bg-black text-white dark:bg-white dark:text-black border-2 border-black dark:border-white px-3 py-1.5 rounded-md text-xs font-mono font-bold shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] uppercase">
-          <Sparkles className="w-3.5 h-3.5 text-amber-400 animate-spin" />
           <span>Move cursor around stage to test live look-at tracking</span>
         </div>
 
@@ -224,7 +244,7 @@ window.addEventListener('mousemove', (e) => {
               height: `${spritesheet.frameHeight}px`,
               backgroundImage: `url(${spritesheet.dataUrl})`,
               backgroundPosition: `${bgX}px ${bgY}px`,
-              backgroundRepeat: 'no-repeat',
+              backgroundRepeat: "no-repeat",
               backgroundSize: `${spritesheet.width}px ${spritesheet.height}px`,
             }}
           />
@@ -232,7 +252,8 @@ window.addEventListener('mousemove', (e) => {
           {/* Target Reticle / Pointer Ray */}
           <div className="mt-4 flex flex-wrap items-center justify-center gap-2 text-xs font-mono font-bold text-zinc-900 dark:text-zinc-100 bg-white dark:bg-zinc-900 px-3 py-1.5 rounded-md border-2 border-black dark:border-zinc-700 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
             <span>
-              Frame #{activeFrameIndex + 1} (R:{currentFrame.row + 1}, C:{currentFrame.col + 1})
+              Frame #{activeFrameIndex + 1} (R:{currentFrame.row + 1}, C:
+              {currentFrame.col + 1})
             </span>
             <span className="text-zinc-400">|</span>
             <span className="bg-amber-400 text-black px-1.5 py-0.5 rounded border border-black">
@@ -248,13 +269,22 @@ window.addEventListener('mousemove', (e) => {
         {/* Realtime Cursor Stats Pill */}
         <div className="absolute bottom-4 right-4 bg-white dark:bg-zinc-900 border-2 border-black dark:border-zinc-700 px-3 py-1.5 rounded-md text-xs font-mono font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-3 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
           <div>
-            ΔX: <span className="text-black dark:text-white font-extrabold">{Math.round(mousePos.x)}px</span>
+            ΔX:{" "}
+            <span className="text-black dark:text-white font-extrabold">
+              {Math.round(mousePos.x)}px
+            </span>
           </div>
           <div>
-            ΔY: <span className="text-black dark:text-white font-extrabold">{Math.round(mousePos.y)}px</span>
+            ΔY:{" "}
+            <span className="text-black dark:text-white font-extrabold">
+              {Math.round(mousePos.y)}px
+            </span>
           </div>
           <div>
-            Dist: <span className="text-black dark:text-white font-extrabold">{Math.round(mousePos.dist)}px</span>
+            Dist:{" "}
+            <span className="text-black dark:text-white font-extrabold">
+              {Math.round(mousePos.dist)}px
+            </span>
           </div>
         </div>
       </div>
@@ -292,24 +322,34 @@ window.addEventListener('mousemove', (e) => {
               setDemoConfig({ ...demoConfig, sensitivity: val })
             }
           />
-          <span className="text-[11px] text-zinc-600 dark:text-zinc-400 font-medium mt-1 block">Rotation speed multiplier</span>
+          <span className="text-[11px] text-zinc-600 dark:text-zinc-400 font-medium mt-1 block">
+            Rotation speed multiplier
+          </span>
         </div>
 
         <div className="flex items-center gap-6 pt-2">
           <div className="flex items-center gap-2">
             <Switch
               checked={demoConfig.invertX}
-              onCheckedChange={(checked) => setDemoConfig({ ...demoConfig, invertX: checked })}
+              onCheckedChange={(checked) =>
+                setDemoConfig({ ...demoConfig, invertX: checked })
+              }
             />
-            <span className="text-xs font-bold text-zinc-900 dark:text-zinc-100 uppercase">Invert X</span>
+            <span className="text-xs font-bold text-zinc-900 dark:text-zinc-100 uppercase">
+              Invert X
+            </span>
           </div>
 
           <div className="flex items-center gap-2">
             <Switch
               checked={demoConfig.invertY}
-              onCheckedChange={(checked) => setDemoConfig({ ...demoConfig, invertY: checked })}
+              onCheckedChange={(checked) =>
+                setDemoConfig({ ...demoConfig, invertY: checked })
+              }
             />
-            <span className="text-xs font-bold text-zinc-900 dark:text-zinc-100 uppercase">Invert Y</span>
+            <span className="text-xs font-bold text-zinc-900 dark:text-zinc-100 uppercase">
+              Invert Y
+            </span>
           </div>
         </div>
       </div>
@@ -325,17 +365,17 @@ window.addEventListener('mousemove', (e) => {
           <div className="flex items-center gap-2">
             <div className="flex bg-white dark:bg-zinc-950 p-1 rounded-md border-2 border-black dark:border-zinc-700 text-xs">
               <Button
-                variant={codeType === 'react' ? 'default' : 'ghost'}
+                variant={codeType === "react" ? "default" : "ghost"}
                 size="sm"
-                onClick={() => setCodeType('react')}
+                onClick={() => setCodeType("react")}
                 className="h-7 text-[11px]"
               >
                 React JSX
               </Button>
               <Button
-                variant={codeType === 'js' ? 'default' : 'ghost'}
+                variant={codeType === "js" ? "default" : "ghost"}
                 size="sm"
-                onClick={() => setCodeType('js')}
+                onClick={() => setCodeType("js")}
                 className="h-7 text-[11px]"
               >
                 HTML + JS
@@ -346,7 +386,10 @@ window.addEventListener('mousemove', (e) => {
               variant="glow"
               size="sm"
               onClick={() =>
-                copyToClipboard(codeType === 'react' ? reactCodeSnippet : jsCodeSnippet, codeType)
+                copyToClipboard(
+                  codeType === "react" ? reactCodeSnippet : jsCodeSnippet,
+                  codeType,
+                )
               }
             >
               {copiedTab === codeType ? (
@@ -366,7 +409,7 @@ window.addEventListener('mousemove', (e) => {
 
         <div className="p-4 bg-zinc-50 dark:bg-zinc-900 overflow-x-auto border-t border-zinc-200 dark:border-zinc-800">
           <pre className="text-xs font-mono font-semibold text-zinc-900 dark:text-zinc-100 leading-relaxed">
-            {codeType === 'react' ? reactCodeSnippet : jsCodeSnippet}
+            {codeType === "react" ? reactCodeSnippet : jsCodeSnippet}
           </pre>
         </div>
       </div>

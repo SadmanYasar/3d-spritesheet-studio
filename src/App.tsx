@@ -1,11 +1,11 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from "react";
 import {
   GeneratedSpritesheet,
   ModelAsset,
   Preset,
   SceneConfig,
   SpritesheetConfig,
-} from './types';
+} from "./types";
 import {
   DEFAULT_SCENE_CONFIG,
   DEFAULT_SPRITESHEET_CONFIG,
@@ -14,59 +14,62 @@ import {
   loadSavedPresets,
   saveRecentConfig,
   saveUserPreset,
-} from './utils/storage';
-import { generateSpritesheet } from './utils/spritesheetGenerator';
-import { Navbar } from './components/Navbar';
-import { ThreeCanvas } from './components/ThreeCanvas';
-import { ControlsPanel } from './components/ControlsPanel';
-import { SpritesheetPreview } from './components/SpritesheetPreview';
-import { InteractiveLookAtDemo } from './components/InteractiveLookAtDemo';
-import { WebcamFaceStudio } from './components/WebcamFaceStudio';
-import { Button } from './components/ui/button';
-import { Box, Sparkles, Grid, AlertCircle } from 'lucide-react';
+} from "./utils/storage";
+import { generateSpritesheet } from "./utils/spritesheetGenerator";
+import { Navbar } from "./components/Navbar";
+import { ThreeCanvas } from "./components/ThreeCanvas";
+import { ControlsPanel } from "./components/ControlsPanel";
+import { SpritesheetPreview } from "./components/SpritesheetPreview";
+import { InteractiveLookAtDemo } from "./components/InteractiveLookAtDemo";
+import { WebcamFaceStudio } from "./components/WebcamFaceStudio";
+import { Button } from "./components/ui/button";
+import { Box, Sparkles, Grid, AlertCircle } from "lucide-react";
 
 export default function App() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // App Theme State (Brutalist Dark & Light Mode)
-  const [theme, setTheme] = useState<'dark' | 'light'>(() => {
-    const saved = localStorage.getItem('theme');
-    return saved === 'light' || saved === 'dark' ? saved : 'dark';
+  const [theme, setTheme] = useState<"dark" | "light">(() => {
+    const saved = localStorage.getItem("theme");
+    return saved === "light" || saved === "dark" ? saved : "dark";
   });
 
   useEffect(() => {
-    if (theme === 'dark') {
-      document.documentElement.classList.add('dark');
+    if (theme === "dark") {
+      document.documentElement.classList.add("dark");
     } else {
-      document.documentElement.classList.remove('dark');
+      document.documentElement.classList.remove("dark");
     }
-    localStorage.setItem('theme', theme);
+    localStorage.setItem("theme", theme);
   }, [theme]);
 
   const toggleTheme = () => {
-    setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'));
+    setTheme((prev) => (prev === "dark" ? "light" : "dark"));
   };
 
   // App State
-  const [sceneConfig, setSceneConfig] = useState<SceneConfig>(DEFAULT_SCENE_CONFIG);
-  const [spritesheetConfig, setSpritesheetConfig] =
-    useState<SpritesheetConfig>(DEFAULT_SPRITESHEET_CONFIG);
+  const [sceneConfig, setSceneConfig] =
+    useState<SceneConfig>(DEFAULT_SCENE_CONFIG);
+  const [spritesheetConfig, setSpritesheetConfig] = useState<SpritesheetConfig>(
+    DEFAULT_SPRITESHEET_CONFIG,
+  );
   const [selectedModel, setSelectedModel] = useState<ModelAsset>({
-    id: 'model-gman',
-    name: 'G-Man Head',
-    type: 'custom',
-    url: '/gman_head_rigged.glb',
-    format: 'glb',
+    id: "model-gman",
+    name: "G-Man Head",
+    type: "custom",
+    url: "/gman_head_rigged.glb",
+    format: "glb",
   });
 
-  const [generatedSpritesheet, setGeneratedSpritesheet] = useState<GeneratedSpritesheet | null>(
-    null
-  );
+  const [generatedSpritesheet, setGeneratedSpritesheet] =
+    useState<GeneratedSpritesheet | null>(null);
   const [presets, setPresets] = useState<Preset[]>(loadSavedPresets());
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
   const [progressPct, setProgressPct] = useState<number>(0);
-  const [progressText, setProgressText] = useState<string>('');
-  const [activeView, setActiveView] = useState<'studio' | 'webcam' | 'interactive'>('studio');
+  const [progressText, setProgressText] = useState<string>("");
+  const [activeView, setActiveView] = useState<
+    "studio" | "webcam" | "interactive"
+  >("studio");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   // Load recent config from local storage if available
@@ -97,12 +100,15 @@ export default function App() {
         setIsGenerating(true);
         let result;
         if (bakerRef.current) {
-          result = await bakerRef.current(spritesheetConfig, (pct: number, text: string) => {
-            if (!isCancelled) {
-              setProgressPct(pct);
-              setProgressText(text);
-            }
-          });
+          result = await bakerRef.current(
+            spritesheetConfig,
+            (pct: number, text: string) => {
+              if (!isCancelled) {
+                setProgressPct(pct);
+                setProgressText(text);
+              }
+            },
+          );
         } else {
           result = await generateSpritesheet(
             selectedModel,
@@ -113,14 +119,14 @@ export default function App() {
                 setProgressPct(pct);
                 setProgressText(text);
               }
-            }
+            },
           );
         }
         if (!isCancelled) {
           setGeneratedSpritesheet(result);
         }
       } catch (err) {
-        console.error('Initial spritesheet bake failed:', err);
+        console.error("Initial spritesheet bake failed:", err);
       } finally {
         if (!isCancelled) setIsGenerating(false);
       }
@@ -139,14 +145,17 @@ export default function App() {
       setErrorMessage(null);
       setIsGenerating(true);
       setProgressPct(0);
-      setProgressText('Starting render engine...');
+      setProgressText("Starting render engine...");
 
       let result;
       if (bakerRef.current) {
-        result = await bakerRef.current(spritesheetConfig, (pct: number, text: string) => {
-          setProgressPct(pct);
-          setProgressText(text);
-        });
+        result = await bakerRef.current(
+          spritesheetConfig,
+          (pct: number, text: string) => {
+            setProgressPct(pct);
+            setProgressText(text);
+          },
+        );
       } else {
         result = await generateSpritesheet(
           selectedModel,
@@ -155,14 +164,14 @@ export default function App() {
           (pct, text) => {
             setProgressPct(pct);
             setProgressText(text);
-          }
+          },
         );
       }
 
       setGeneratedSpritesheet(result);
     } catch (err: any) {
-      console.error('Bake error:', err);
-      setErrorMessage(err.message || 'Failed to generate spritesheet.');
+      console.error("Bake error:", err);
+      setErrorMessage(err.message || "Failed to generate spritesheet.");
     } finally {
       setIsGenerating(false);
     }
@@ -191,13 +200,13 @@ export default function App() {
 
   // Upload custom 3D model file
   const handleUploadCustomFile = (file: File) => {
-    const ext = file.name.split('.').pop()?.toLowerCase() || 'glb';
+    const ext = file.name.split(".").pop()?.toLowerCase() || "glb";
     const blobUrl = URL.createObjectURL(file);
 
     const customAsset: ModelAsset = {
-      id: 'custom-' + Date.now(),
+      id: "custom-" + Date.now(),
       name: file.name,
-      type: 'custom',
+      type: "custom",
       url: blobUrl,
       format: ext as any,
     };
@@ -247,7 +256,7 @@ export default function App() {
         )}
 
         {/* View 1: 3D Generator Studio */}
-        <div className={activeView === 'studio' ? 'space-y-6' : 'hidden'}>
+        <div className={activeView === "studio" ? "space-y-6" : "hidden"}>
           {/* Top Row: Live 3D Viewport + Config Controls Panel */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
             {/* 3D Viewport Canvas */}
@@ -260,7 +269,10 @@ export default function App() {
                   </h2>
                 </div>
                 <span className="text-[11px] font-mono font-bold text-zinc-700 dark:text-zinc-300">
-                  Model: <strong className="text-black dark:text-white underline">{selectedModel.name}</strong>
+                  Model:{" "}
+                  <strong className="text-black dark:text-white underline">
+                    {selectedModel.name}
+                  </strong>
                 </span>
               </div>
 
@@ -305,7 +317,7 @@ export default function App() {
 
               {generatedSpritesheet && (
                 <Button
-                  onClick={() => setActiveView('interactive')}
+                  onClick={() => setActiveView("interactive")}
                   variant="glow"
                   size="sm"
                 >
@@ -324,30 +336,29 @@ export default function App() {
         </div>
 
         {/* View 2: Webcam Face Capture Studio */}
-        {activeView === 'webcam' && (
+        {activeView === "webcam" && (
           <div className="space-y-4">
             <WebcamFaceStudio
-              onBakeComplete={(spritesheet) => setGeneratedSpritesheet(spritesheet)}
-              onNavigateToSimulator={() => setActiveView('interactive')}
+              onBakeComplete={(spritesheet) =>
+                setGeneratedSpritesheet(spritesheet)
+              }
+              onNavigateToSimulator={() => setActiveView("interactive")}
             />
           </div>
         )}
 
         {/* View 3: Interactive Mouse-Tracking Simulator */}
-        <div className={activeView === 'interactive' ? 'space-y-4' : 'hidden'}>
+        <div className={activeView === "interactive" ? "space-y-4" : "hidden"}>
           <div className="flex items-center justify-between pb-2 border-b-2 border-black dark:border-zinc-800">
             <div>
               <h2 className="text-sm font-black text-zinc-900 dark:text-zinc-100 uppercase tracking-tight flex items-center gap-2">
                 <Sparkles className="w-4 h-4 text-amber-500" />
                 <span>Interactive Mouse Cursor Look-At Simulator</span>
               </h2>
-              <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-0.5 font-medium">
-                Test how your generated spritesheet responds dynamically to mouse movement across screen angles.
-              </p>
             </div>
 
             <Button
-              onClick={() => setActiveView('studio')}
+              onClick={() => setActiveView("studio")}
               variant="outline"
               size="sm"
             >

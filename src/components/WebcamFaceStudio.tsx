@@ -1,26 +1,29 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { FaceMesh, Results as FaceMeshResults } from '@mediapipe/face_mesh';
-import { Camera } from '@mediapipe/camera_utils';
-import { SelfieSegmentation, Results as SelfieResults } from '@mediapipe/selfie_segmentation';
+import React, { useState, useEffect, useRef } from "react";
+import { FaceMesh, Results as FaceMeshResults } from "@mediapipe/face_mesh";
+import { Camera } from "@mediapipe/camera_utils";
+import {
+  SelfieSegmentation,
+  Results as SelfieResults,
+} from "@mediapipe/selfie_segmentation";
 import {
   CapturedFaceFrame,
   FaceCaptureTarget,
   FaceStudioConfig,
   GeneratedSpritesheet,
   SpritesheetConfig,
-} from '../types';
+} from "../types";
 import {
   computeFaceOrientation,
   FaceOrientation,
   generateFaceTargetGrid,
   isFaceInTargetPose,
-} from '../utils/faceTracker';
-import { removeBackgroundCanvas } from '../utils/backgroundSegmenter';
-import { FaceMeshOverlay } from './FaceMeshOverlay';
-import { SpritesheetPreview } from './SpritesheetPreview';
-import { Button } from './ui/button';
-import { Switch } from './ui/switch';
-import { Badge } from './ui/badge';
+} from "../utils/faceTracker";
+import { removeBackgroundCanvas } from "../utils/backgroundSegmenter";
+import { FaceMeshOverlay } from "./FaceMeshOverlay";
+import { SpritesheetPreview } from "./SpritesheetPreview";
+import { Button } from "./ui/button";
+import { Switch } from "./ui/switch";
+import { Badge } from "./ui/badge";
 import {
   Camera as CameraIcon,
   CheckCircle2,
@@ -35,7 +38,7 @@ import {
   Check,
   AlertCircle,
   Loader2,
-} from 'lucide-react';
+} from "lucide-react";
 
 interface WebcamFaceStudioProps {
   isActive?: boolean;
@@ -73,14 +76,17 @@ export function WebcamFaceStudio({
   // Tracking State
   const [cameraActive, setCameraActive] = useState<boolean>(false);
   const [cameraError, setCameraError] = useState<string | null>(null);
-  const [faceOrientation, setFaceOrientation] = useState<FaceOrientation | null>(null);
+  const [faceOrientation, setFaceOrientation] =
+    useState<FaceOrientation | null>(null);
   const [landmarks, setLandmarks] = useState<any>(null);
   const [segmentationMask, setSegmentationMask] = useState<any>(null);
 
   // Target Grid State
   const [targets, setTargets] = useState<FaceCaptureTarget[]>([]);
   const [activeTargetIndex, setActiveTargetIndex] = useState<number>(0);
-  const [capturedFrames, setCapturedFrames] = useState<Record<number, CapturedFaceFrame>>({});
+  const [capturedFrames, setCapturedFrames] = useState<
+    Record<number, CapturedFaceFrame>
+  >({});
 
   // Countdown & Auto Lock State
   const [holdProgress, setHoldProgress] = useState<number>(0); // 0 to 100%
@@ -88,7 +94,8 @@ export function WebcamFaceStudio({
   const holdStartRef = useRef<number | null>(null);
 
   // Generated Atlas Output State
-  const [bakedSpritesheet, setBakedSpritesheet] = useState<GeneratedSpritesheet | null>(null);
+  const [bakedSpritesheet, setBakedSpritesheet] =
+    useState<GeneratedSpritesheet | null>(null);
   const [isBaking, setIsBaking] = useState<boolean>(false);
 
   // Generate targets whenever grid dimensions change
@@ -98,7 +105,14 @@ export function WebcamFaceStudio({
     setActiveTargetIndex(0);
     setCapturedFrames({});
     setBakedSpritesheet(null);
-  }, [config.gridRows, config.gridCols, config.pitchMin, config.pitchMax, config.yawMin, config.yawMax]);
+  }, [
+    config.gridRows,
+    config.gridCols,
+    config.pitchMin,
+    config.pitchMax,
+    config.yawMin,
+    config.yawMax,
+  ]);
 
   // Handle camera start & stop on tab active view changes
   useEffect(() => {
@@ -117,7 +131,8 @@ export function WebcamFaceStudio({
       try {
         // 1. Initialize FaceMesh
         const fm = new FaceMesh({
-          locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`,
+          locateFile: (file) =>
+            `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`,
         });
 
         fm.setOptions({
@@ -129,7 +144,10 @@ export function WebcamFaceStudio({
 
         fm.onResults((results: FaceMeshResults) => {
           if (isCancelled) return;
-          if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
+          if (
+            results.multiFaceLandmarks &&
+            results.multiFaceLandmarks.length > 0
+          ) {
             const lms = results.multiFaceLandmarks[0];
             setLandmarks(lms);
             const orient = computeFaceOrientation(lms);
@@ -144,7 +162,8 @@ export function WebcamFaceStudio({
 
         // 2. Initialize SelfieSegmentation
         const ss = new SelfieSegmentation({
-          locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/${file}`,
+          locateFile: (file) =>
+            `https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/${file}`,
         });
 
         ss.setOptions({
@@ -167,7 +186,9 @@ export function WebcamFaceStudio({
               if (videoRef.current && faceMeshRef.current && !isCancelled) {
                 await faceMeshRef.current.send({ image: videoRef.current });
                 if (config.removeBackground && selfieSegmentationRef.current) {
-                  await selfieSegmentationRef.current.send({ image: videoRef.current });
+                  await selfieSegmentationRef.current.send({
+                    image: videoRef.current,
+                  });
                 }
               }
             },
@@ -180,9 +201,9 @@ export function WebcamFaceStudio({
           if (!isCancelled) setCameraActive(true);
         }
       } catch (err: any) {
-        console.error('Camera initialization error:', err);
+        console.error("Camera initialization error:", err);
         if (!isCancelled) {
-          setCameraError(err.message || 'Could not access webcam camera.');
+          setCameraError(err.message || "Could not access webcam camera.");
         }
       }
     };
@@ -201,9 +222,10 @@ export function WebcamFaceStudio({
   }, [isActive, config.removeBackground]);
 
   // Audio Beep Synthesizer
-  const playAudioTone = (type: 'lock' | 'snap') => {
+  const playAudioTone = (type: "lock" | "snap") => {
     try {
-      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+      const AudioCtx =
+        window.AudioContext || (window as any).webkitAudioContext;
       if (!AudioCtx) return;
       const ctx = new AudioCtx();
       const osc = ctx.createOscillator();
@@ -212,12 +234,12 @@ export function WebcamFaceStudio({
       osc.connect(gain);
       gain.connect(ctx.destination);
 
-      if (type === 'lock') {
+      if (type === "lock") {
         osc.frequency.setValueAtTime(880, ctx.currentTime);
         gain.gain.setValueAtTime(0.12, ctx.currentTime);
         osc.start();
         osc.stop(ctx.currentTime + 0.15);
-      } else if (type === 'snap') {
+      } else if (type === "snap") {
         osc.frequency.setValueAtTime(450, ctx.currentTime);
         osc.frequency.exponentialRampToValueAtTime(150, ctx.currentTime + 0.12);
         gain.gain.setValueAtTime(0.25, ctx.currentTime);
@@ -249,13 +271,16 @@ export function WebcamFaceStudio({
 
     if (!holdStartRef.current) {
       holdStartRef.current = Date.now();
-      playAudioTone('lock');
+      playAudioTone("lock");
     }
 
     const interval = setInterval(() => {
       if (!holdStartRef.current) return;
       const elapsed = Date.now() - holdStartRef.current;
-      const pct = Math.min(100, Math.floor((elapsed / config.holdTimeMs) * 100));
+      const pct = Math.min(
+        100,
+        Math.floor((elapsed / config.holdTimeMs) * 100),
+      );
       setHoldProgress(pct);
 
       if (elapsed >= config.holdTimeMs) {
@@ -276,18 +301,22 @@ export function WebcamFaceStudio({
   // Keyboard Shortcuts: Space (Snap), Left/Right (Navigate Targets), R (Retake Pose)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      if (
+        e.target instanceof HTMLInputElement ||
+        e.target instanceof HTMLTextAreaElement
+      )
+        return;
 
-      if (e.code === 'Space') {
+      if (e.code === "Space") {
         e.preventDefault();
         handleCaptureFrame(activeTargetIndex);
-      } else if (e.code === 'ArrowRight') {
+      } else if (e.code === "ArrowRight") {
         e.preventDefault();
         setActiveTargetIndex((prev) => Math.min(targets.length - 1, prev + 1));
-      } else if (e.code === 'ArrowLeft') {
+      } else if (e.code === "ArrowLeft") {
         e.preventDefault();
         setActiveTargetIndex((prev) => Math.max(0, prev - 1));
-      } else if (e.code === 'KeyR') {
+      } else if (e.code === "KeyR") {
         e.preventDefault();
         setCapturedFrames((prev) => {
           const next = { ...prev };
@@ -297,8 +326,8 @@ export function WebcamFaceStudio({
       }
     };
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, [activeTargetIndex, faceOrientation, targets.length]);
 
   // Capture Single Frame Function
@@ -308,7 +337,7 @@ export function WebcamFaceStudio({
     const target = targets[targetIdx];
     if (!target) return;
 
-    playAudioTone('snap');
+    playAudioTone("snap");
     setShutterFlash(true);
     setTimeout(() => setShutterFlash(false), 200);
 
@@ -316,12 +345,17 @@ export function WebcamFaceStudio({
 
     // Process frame with background removal if enabled
     const processedCanvas = removeBackground
-      ? removeBackgroundCanvas(videoRef.current, frameWidth, frameHeight, segmentationMask)
+      ? removeBackgroundCanvas(
+          videoRef.current,
+          frameWidth,
+          frameHeight,
+          segmentationMask,
+        )
       : (() => {
-          const c = document.createElement('canvas');
+          const c = document.createElement("canvas");
           c.width = frameWidth;
           c.height = frameHeight;
-          const ctx = c.getContext('2d')!;
+          const ctx = c.getContext("2d")!;
           ctx.translate(frameWidth, 0);
           ctx.scale(-1, 1);
           ctx.drawImage(videoRef.current!, 0, 0, frameWidth, frameHeight);
@@ -337,7 +371,7 @@ export function WebcamFaceStudio({
       actualPitch: faceOrientation.pitch,
       actualYaw: faceOrientation.yaw,
       actualRoll: faceOrientation.roll,
-      dataUrl: processedCanvas.toDataURL('image/png'),
+      dataUrl: processedCanvas.toDataURL("image/png"),
       canvas: processedCanvas,
       capturedAt: Date.now(),
     };
@@ -349,13 +383,15 @@ export function WebcamFaceStudio({
 
     // Auto-advance to next uncaptured frame
     const nextUncaptured = targets.findIndex(
-      (t, idx) => idx > targetIdx && !capturedFrames[t.index]
+      (t, idx) => idx > targetIdx && !capturedFrames[t.index],
     );
 
     if (nextUncaptured !== -1) {
       setActiveTargetIndex(nextUncaptured);
     } else {
-      const firstUncaptured = targets.findIndex((t) => !capturedFrames[t.index] && t.index !== target.index);
+      const firstUncaptured = targets.findIndex(
+        (t) => !capturedFrames[t.index] && t.index !== target.index,
+      );
       if (firstUncaptured !== -1) {
         setActiveTargetIndex(firstUncaptured);
       }
@@ -373,10 +409,10 @@ export function WebcamFaceStudio({
       const sheetWidth = gridCols * frameWidth + (gridCols + 1) * padding;
       const sheetHeight = gridRows * frameHeight + (gridRows + 1) * padding;
 
-      const sheetCanvas = document.createElement('canvas');
+      const sheetCanvas = document.createElement("canvas");
       sheetCanvas.width = sheetWidth;
       sheetCanvas.height = sheetHeight;
-      const sheetCtx = sheetCanvas.getContext('2d')!;
+      const sheetCtx = sheetCanvas.getContext("2d")!;
 
       // Clear transparent
       sheetCtx.clearRect(0, 0, sheetWidth, sheetHeight);
@@ -402,12 +438,12 @@ export function WebcamFaceStudio({
           });
         } else {
           // Draw placeholder grid cell
-          sheetCtx.strokeStyle = '#3f3f46';
+          sheetCtx.strokeStyle = "#3f3f46";
           sheetCtx.strokeRect(x, y, frameWidth, frameHeight);
         }
       });
 
-      const finalDataUrl = sheetCanvas.toDataURL('image/png');
+      const finalDataUrl = sheetCanvas.toDataURL("image/png");
 
       const result: GeneratedSpritesheet = {
         dataUrl: finalDataUrl,
@@ -424,7 +460,7 @@ export function WebcamFaceStudio({
       setBakedSpritesheet(result);
       if (onBakeComplete) onBakeComplete(result);
     } catch (err) {
-      console.error('Face Spritesheet bake error:', err);
+      console.error("Face Spritesheet bake error:", err);
     } finally {
       setIsBaking(false);
     }
@@ -445,9 +481,6 @@ export function WebcamFaceStudio({
             <h3 className="text-xs font-black uppercase tracking-wider text-zinc-900 dark:text-zinc-50">
               Webcam Face Capture Studio
             </h3>
-            <span className="text-[11px] font-mono text-zinc-600 dark:text-zinc-400 font-medium">
-              Pose guided webcam capture with Drei FaceMesh & background removal
-            </span>
           </div>
         </div>
 
@@ -455,13 +488,15 @@ export function WebcamFaceStudio({
         <div className="flex flex-wrap items-center gap-3">
           {/* Grid Size Picker */}
           <div className="flex items-center gap-1 bg-zinc-100 dark:bg-zinc-900 border-2 border-black dark:border-zinc-700 p-1 rounded-lg">
-            <span className="text-[11px] font-black uppercase px-2 text-zinc-700 dark:text-zinc-300">Grid:</span>
+            <span className="text-[11px] font-black uppercase px-2 text-zinc-700 dark:text-zinc-300">
+              Grid:
+            </span>
             <button
               onClick={() => setConfig({ ...config, gridRows: 5, gridCols: 5 })}
               className={`px-2 py-0.5 text-[11px] font-bold rounded cursor-pointer ${
                 config.gridRows === 5 && config.gridCols === 5
-                  ? 'bg-black text-white dark:bg-white dark:text-black font-black'
-                  : 'text-zinc-600 dark:text-zinc-400'
+                  ? "bg-black text-white dark:bg-white dark:text-black font-black"
+                  : "text-zinc-600 dark:text-zinc-400"
               }`}
             >
               5 x 5 (25)
@@ -470,8 +505,8 @@ export function WebcamFaceStudio({
               onClick={() => setConfig({ ...config, gridRows: 3, gridCols: 3 })}
               className={`px-2 py-0.5 text-[11px] font-bold rounded cursor-pointer ${
                 config.gridRows === 3 && config.gridCols === 3
-                  ? 'bg-black text-white dark:bg-white dark:text-black font-black'
-                  : 'text-zinc-600 dark:text-zinc-400'
+                  ? "bg-black text-white dark:bg-white dark:text-black font-black"
+                  : "text-zinc-600 dark:text-zinc-400"
               }`}
             >
               3 x 3 (9)
@@ -482,7 +517,9 @@ export function WebcamFaceStudio({
           <label className="flex items-center gap-2 bg-zinc-100 dark:bg-zinc-900 border-2 border-black dark:border-zinc-700 px-3 py-1.5 rounded-lg text-xs font-bold cursor-pointer">
             <Switch
               checked={config.removeBackground}
-              onCheckedChange={(val) => setConfig({ ...config, removeBackground: val })}
+              onCheckedChange={(val) =>
+                setConfig({ ...config, removeBackground: val })
+              }
             />
             <span className="text-zinc-900 dark:text-zinc-100 text-[11px] uppercase font-black">
               Remove Background
@@ -493,7 +530,9 @@ export function WebcamFaceStudio({
           <label className="flex items-center gap-2 bg-zinc-100 dark:bg-zinc-900 border-2 border-black dark:border-zinc-700 px-3 py-1.5 rounded-lg text-xs font-bold cursor-pointer">
             <Switch
               checked={config.showFaceMeshOverlay}
-              onCheckedChange={(val) => setConfig({ ...config, showFaceMeshOverlay: val })}
+              onCheckedChange={(val) =>
+                setConfig({ ...config, showFaceMeshOverlay: val })
+              }
             />
             <span className="text-zinc-900 dark:text-zinc-100 text-[11px] uppercase font-black">
               3D FaceMesh Wireframe
@@ -504,7 +543,9 @@ export function WebcamFaceStudio({
           <label className="flex items-center gap-2 bg-zinc-100 dark:bg-zinc-900 border-2 border-black dark:border-zinc-700 px-3 py-1.5 rounded-lg text-xs font-bold cursor-pointer">
             <Switch
               checked={config.autoCapture}
-              onCheckedChange={(val) => setConfig({ ...config, autoCapture: val })}
+              onCheckedChange={(val) =>
+                setConfig({ ...config, autoCapture: val })
+              }
             />
             <span className="text-zinc-900 dark:text-zinc-100 text-[11px] uppercase font-black">
               Auto Pose Lock
@@ -526,10 +567,16 @@ export function WebcamFaceStudio({
 
               {faceOrientation && (
                 <div className="flex items-center gap-2 font-mono text-xs font-bold">
-                  <Badge variant="outline" className="border-black dark:border-zinc-700">
+                  <Badge
+                    variant="outline"
+                    className="border-black dark:border-zinc-700"
+                  >
                     Pitch: {faceOrientation.pitch}°
                   </Badge>
-                  <Badge variant="outline" className="border-black dark:border-zinc-700">
+                  <Badge
+                    variant="outline"
+                    className="border-black dark:border-zinc-700"
+                  >
                     Yaw: {faceOrientation.yaw}°
                   </Badge>
                 </div>
@@ -565,11 +612,13 @@ export function WebcamFaceStudio({
                   {/* Top Target Instruction Banner */}
                   <div className="bg-black/90 backdrop-blur-md border-2 border-amber-400 p-3 rounded-lg text-white shadow-xl max-w-lg mx-auto w-full text-center space-y-1">
                     <span className="text-[10px] font-mono uppercase font-black tracking-widest text-amber-400 block">
-                      Target #{currentTarget.index + 1} of {targets.length}: Pitch {currentTarget.targetPitch}° / Yaw {currentTarget.targetYaw}°
+                      Target #{currentTarget.index + 1} of {targets.length}:
+                      Pitch {currentTarget.targetPitch}° / Yaw{" "}
+                      {currentTarget.targetYaw}°
                     </span>
 
                     <h4 className="text-xs sm:text-sm font-black uppercase tracking-tight text-amber-300">
-                      🎯 ALIGN FACE INSIDE AMBER GHOST OUTLINE & PRESS SPACEBAR
+                      ALIGN FACE INSIDE AMBER GHOST OUTLINE & PRESS SPACEBAR
                     </h4>
 
                     <div className="text-[10px] font-mono font-bold text-zinc-300 flex items-center justify-center gap-3 pt-0.5">
@@ -587,12 +636,12 @@ export function WebcamFaceStudio({
                     <div
                       className={`w-44 h-52 rounded-full border-4 transition-all duration-200 flex items-center justify-center relative ${
                         isTargetMatched
-                          ? 'border-emerald-400 bg-emerald-500/25 shadow-[0_0_40px_rgba(52,211,153,0.8)] scale-105'
-                          : 'border-amber-400/80 border-dashed bg-black/20'
+                          ? "border-emerald-400 bg-emerald-500/25 shadow-[0_0_40px_rgba(52,211,153,0.8)] scale-105"
+                          : "border-amber-400/80 border-dashed bg-black/20"
                       }`}
                     >
                       <span className="text-xs font-mono font-black text-white bg-black/80 px-2.5 py-1 rounded border border-white">
-                        {isTargetMatched ? '✋ HOLD STILL!' : 'ALIGN HEAD'}
+                        {isTargetMatched ? "HOLD STILL!" : "ALIGN HEAD"}
                       </span>
                     </div>
                   </div>
@@ -600,10 +649,12 @@ export function WebcamFaceStudio({
                   {/* Bottom Status Bar */}
                   <div className="flex items-center justify-between text-white text-xs font-mono font-bold bg-black/80 p-2 rounded border border-white/40">
                     <span>
-                      Target: Pitch({currentTarget.targetPitch}°) Yaw({currentTarget.targetYaw}°)
+                      Target: Pitch({currentTarget.targetPitch}°) Yaw(
+                      {currentTarget.targetYaw}°)
                     </span>
                     <span>
-                      Current: Pitch({faceOrientation?.pitch || 0}°) Yaw({faceOrientation?.yaw || 0}°)
+                      Current: Pitch({faceOrientation?.pitch || 0}°) Yaw(
+                      {faceOrientation?.yaw || 0}°)
                     </span>
                   </div>
                 </div>
@@ -646,7 +697,11 @@ export function WebcamFaceStudio({
                 ) : (
                   <Sparkles className="w-3.5 h-3.5 text-black" />
                 )}
-                <span>{isBaking ? 'Baking Atlas...' : `Bake Face Atlas (${capturedCount}/${targets.length})`}</span>
+                <span>
+                  {isBaking
+                    ? "Baking Atlas..."
+                    : `Bake Face Atlas (${capturedCount}/${targets.length})`}
+                </span>
               </Button>
             </div>
           </div>
@@ -658,7 +713,9 @@ export function WebcamFaceStudio({
             <div className="flex items-center justify-between pb-2 border-b-2 border-black dark:border-zinc-800">
               <span className="text-xs font-black uppercase tracking-wider text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
                 <Grid className="w-4 h-4 text-amber-500" />
-                <span>Pose Grid Map ({capturedCount}/{targets.length})</span>
+                <span>
+                  Pose Grid Map ({capturedCount}/{targets.length})
+                </span>
               </span>
 
               <Button
@@ -688,10 +745,10 @@ export function WebcamFaceStudio({
                     onClick={() => setActiveTargetIndex(t.index)}
                     className={`relative rounded-md border-2 transition-all cursor-pointer flex flex-col items-center justify-between p-1 text-center min-h-[70px] ${
                       isActive
-                        ? 'border-amber-500 bg-amber-400/20 ring-2 ring-amber-500 shadow-md z-10'
+                        ? "border-amber-500 bg-amber-400/20 ring-2 ring-amber-500 shadow-md z-10"
                         : captured
-                        ? 'border-emerald-500 bg-emerald-500/10'
-                        : 'border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 hover:border-black dark:hover:border-zinc-400'
+                          ? "border-emerald-500 bg-emerald-500/10"
+                          : "border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 hover:border-black dark:hover:border-zinc-400"
                     }`}
                   >
                     <span className="text-[9px] font-mono font-black text-zinc-700 dark:text-zinc-300">
@@ -746,7 +803,7 @@ export function WebcamFaceStudio({
           <SpritesheetPreview
             spritesheet={bakedSpritesheet}
             spritesheetConfig={{
-              layout: 'grid',
+              layout: "grid",
               columns: config.gridCols,
               rows: config.gridRows,
               totalFrames: targets.length,
@@ -754,11 +811,11 @@ export function WebcamFaceStudio({
               frameHeight: config.frameHeight,
               padding: 2,
               isMultiAxisGrid: true,
-              singleAxis: 'Y',
+              singleAxis: "Y",
               singleAxisRange: { start: -40, end: 40 },
               gridMultiAxis: {
-                pitchAxis: 'X',
-                yawAxis: 'Y',
+                pitchAxis: "X",
+                yawAxis: "Y",
                 pitchRange: { start: config.pitchMin, end: config.pitchMax },
                 yawRange: { start: config.yawMin, end: config.yawMax },
               },

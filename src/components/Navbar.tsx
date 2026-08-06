@@ -1,15 +1,25 @@
-import React from 'react';
-import { ModelAsset, Preset } from '../types';
-import { Sparkles, Upload, Box, RefreshCw, Grid, Sun, Moon, Camera as CameraIcon } from 'lucide-react';
-import { Button } from './ui/button';
-import { Badge } from './ui/badge';
+import React from "react";
+import { ModelAsset, Preset } from "../types";
+import {
+  Sparkles,
+  Upload,
+  Box,
+  RefreshCw,
+  Grid,
+  Sun,
+  Moon,
+  Github,
+  Camera as CameraIcon,
+} from "lucide-react";
+import { Button } from "./ui/button";
+import { Badge } from "./ui/badge";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from './ui/select';
+} from "./ui/select";
 
 interface NavbarProps {
   onGenerate: () => void;
@@ -20,9 +30,9 @@ interface NavbarProps {
   onUploadClick: () => void;
   presets: Preset[];
   onSelectPreset: (preset: Preset) => void;
-  activeView: 'studio' | 'webcam' | 'interactive';
-  setActiveView: (view: 'studio' | 'webcam' | 'interactive') => void;
-  theme: 'dark' | 'light';
+  activeView: "studio" | "webcam" | "interactive";
+  setActiveView: (view: "studio" | "webcam" | "interactive") => void;
+  theme: "dark" | "light";
   toggleTheme: () => void;
 }
 
@@ -51,22 +61,16 @@ export function Navbar({
           <div>
             <h1 className="text-base font-black text-zinc-900 dark:text-zinc-50 tracking-tight flex items-center gap-2 uppercase">
               <span>3D Spritesheet Studio</span>
-              <Badge variant="emerald" className="text-[10px]">
-                PRO
-              </Badge>
             </h1>
-            <p className="text-[11px] text-zinc-600 dark:text-zinc-400 font-mono hidden sm:block">
-              360° Multi-Axis Spritesheet Generator & Cursor Look-At Simulator
-            </p>
           </div>
         </div>
 
         {/* View Toggle Tabs */}
         <div className="flex items-center bg-zinc-200 dark:bg-zinc-900 p-1 rounded-md border-2 border-black dark:border-zinc-700">
           <Button
-            variant={activeView === 'studio' ? 'default' : 'ghost'}
+            variant={activeView === "studio" ? "default" : "ghost"}
             size="sm"
-            onClick={() => setActiveView('studio')}
+            onClick={() => setActiveView("studio")}
             className="rounded-sm"
           >
             <Box className="w-3.5 h-3.5" />
@@ -74,9 +78,9 @@ export function Navbar({
           </Button>
 
           <Button
-            variant={activeView === 'webcam' ? 'default' : 'ghost'}
+            variant={activeView === "webcam" ? "default" : "ghost"}
             size="sm"
-            onClick={() => setActiveView('webcam')}
+            onClick={() => setActiveView("webcam")}
             className="rounded-sm"
           >
             <CameraIcon className="w-3.5 h-3.5 text-amber-500" />
@@ -84,9 +88,9 @@ export function Navbar({
           </Button>
 
           <Button
-            variant={activeView === 'interactive' ? 'default' : 'ghost'}
+            variant={activeView === "interactive" ? "default" : "ghost"}
             size="sm"
-            onClick={() => setActiveView('interactive')}
+            onClick={() => setActiveView("interactive")}
             className="rounded-sm"
           >
             <Sparkles className="w-3.5 h-3.5" />
@@ -96,23 +100,42 @@ export function Navbar({
 
         {/* Main Action Buttons & Theme Switcher */}
         <div className="flex items-center gap-2 w-full md:w-auto justify-end">
+          {/* GitHub Repository Link Button */}
+          <a
+            href="https://github.com/SadmanYasar/3d-spritesheet-studio"
+            target="_blank"
+            rel="noopener noreferrer"
+            title="View GitHub Repository"
+          >
+            <Button variant="outline" size="sm" className="gap-1.5">
+              <Github className="w-4 h-4 text-zinc-900 dark:text-white" />
+              <span className="font-mono text-[10px] hidden sm:inline">GITHUB</span>
+            </Button>
+          </a>
+
           {/* Theme Toggle Button */}
           <Button
             variant="outline"
             size="sm"
             onClick={toggleTheme}
-            title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+            title={
+              theme === "dark" ? "Switch to Light Mode" : "Switch to Dark Mode"
+            }
             className="gap-1.5"
           >
-            {theme === 'dark' ? (
+            {theme === "dark" ? (
               <>
                 <Sun className="w-4 h-4 text-amber-400" />
-                <span className="font-mono text-[10px] hidden sm:inline">LIGHT</span>
+                <span className="font-mono text-[10px] hidden sm:inline">
+                  LIGHT
+                </span>
               </>
             ) : (
               <>
                 <Moon className="w-4 h-4 text-zinc-900" />
-                <span className="font-mono text-[10px] hidden sm:inline">DARK</span>
+                <span className="font-mono text-[10px] hidden sm:inline">
+                  DARK
+                </span>
               </>
             )}
           </Button>
