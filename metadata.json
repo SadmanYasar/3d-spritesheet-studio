@@ -1,0 +1,6 @@
+{
+  "name": "3D Spritesheet Studio",
+  "description": "Convert 3D models into customizable 2D spritesheets, PNG sequences, and animated GIFs with 360° multi-axis grid captures and live interactive cursor tracking.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
