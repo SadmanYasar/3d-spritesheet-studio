@@ -123,3 +123,42 @@ export interface InteractiveDemoConfig {
   invertY: boolean;
   smoothing: number;
 }
+
+export interface FaceCaptureTarget {
+  index: number;
+  row: number;
+  col: number;
+  targetPitch: number;
+  targetYaw: number;
+  label: string;
+}
+
+export interface FaceStudioConfig {
+  gridRows: number;
+  gridCols: number;
+  pitchMin: number;
+  pitchMax: number;
+  yawMin: number;
+  yawMax: number;
+  toleranceDeg: number;
+  holdTimeMs: number;
+  removeBackground: boolean;
+  showFaceMeshOverlay: boolean;
+  autoCapture: boolean;
+  frameWidth: number;
+  frameHeight: number;
+}
+
+export interface CapturedFaceFrame {
+  index: number;
+  row: number;
+  col: number;
+  targetPitch: number;
+  targetYaw: number;
+  actualPitch: number;
+  actualYaw: number;
+  actualRoll: number;
+  dataUrl: string;
+  canvas: HTMLCanvasElement;
+  capturedAt: number;
+}

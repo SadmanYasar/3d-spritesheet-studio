@@ -21,6 +21,7 @@ import { ThreeCanvas } from './components/ThreeCanvas';
 import { ControlsPanel } from './components/ControlsPanel';
 import { SpritesheetPreview } from './components/SpritesheetPreview';
 import { InteractiveLookAtDemo } from './components/InteractiveLookAtDemo';
+import { WebcamFaceStudio } from './components/WebcamFaceStudio';
 import { Button } from './components/ui/button';
 import { Box, Sparkles, Grid, AlertCircle } from 'lucide-react';
 
@@ -65,7 +66,7 @@ export default function App() {
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
   const [progressPct, setProgressPct] = useState<number>(0);
   const [progressText, setProgressText] = useState<string>('');
-  const [activeView, setActiveView] = useState<'studio' | 'interactive'>('studio');
+  const [activeView, setActiveView] = useState<'studio' | 'webcam' | 'interactive'>('studio');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   // Load recent config from local storage if available
@@ -94,27 +95,17 @@ export default function App() {
 
       try {
         setIsGenerating(true);
-        let result;
-        if (bakerRef.current) {
-          result = await bakerRef.current(spritesheetConfig, (pct: number, text: string) => {
+        const result = await generateSpritesheet(
+          selectedModel,
+          sceneConfig,
+          spritesheetConfig,
+          (pct, text) => {
             if (!isCancelled) {
               setProgressPct(pct);
               setProgressText(text);
             }
-          });
-        } else {
-          result = await generateSpritesheet(
-            selectedModel,
-            sceneConfig,
-            spritesheetConfig,
-            (pct, text) => {
-              if (!isCancelled) {
-                setProgressPct(pct);
-                setProgressText(text);
-              }
-            }
-          );
-        }
+          }
+        );
         if (!isCancelled) {
           setGeneratedSpritesheet(result);
         }
@@ -140,23 +131,15 @@ export default function App() {
       setProgressPct(0);
       setProgressText('Starting render engine...');
 
-      let result;
-      if (bakerRef.current) {
-        result = await bakerRef.current(spritesheetConfig, (pct: number, text: string) => {
+      const result = await generateSpritesheet(
+        selectedModel,
+        sceneConfig,
+        spritesheetConfig,
+        (pct, text) => {
           setProgressPct(pct);
           setProgressText(text);
-        });
-      } else {
-        result = await generateSpritesheet(
-          selectedModel,
-          sceneConfig,
-          spritesheetConfig,
-          (pct, text) => {
-            setProgressPct(pct);
-            setProgressText(text);
-          }
-        );
-      }
+        }
+      );
 
       setGeneratedSpritesheet(result);
     } catch (err: any) {
@@ -322,7 +305,17 @@ export default function App() {
           </div>
         </div>
 
-        {/* View 2: Interactive Mouse-Tracking Simulator */}
+        {/* View 2: Webcam Face Capture Studio */}
+        {activeView === 'webcam' && (
+          <div className="space-y-4">
+            <WebcamFaceStudio
+              onBakeComplete={(spritesheet) => setGeneratedSpritesheet(spritesheet)}
+              onNavigateToSimulator={() => setActiveView('interactive')}
+            />
+          </div>
+        )}
+
+        {/* View 3: Interactive Mouse-Tracking Simulator */}
         <div className={activeView === 'interactive' ? 'space-y-4' : 'hidden'}>
           <div className="flex items-center justify-between pb-2 border-b-2 border-black dark:border-zinc-800">
             <div>

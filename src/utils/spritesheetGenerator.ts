@@ -77,25 +77,30 @@ export async function generateSpritesheet(
 
   if (envPreset && envPreset !== 'none') {
     const url = PRESET_URLS[envPreset];
+    const pmremGenerator = new THREE.PMREMGenerator(renderer);
+    pmremGenerator.compileEquirectangularShader();
+
     if (url) {
       try {
         const rgbeLoader = new RGBELoader();
+        rgbeLoader.setCrossOrigin('anonymous');
         const texture = await rgbeLoader.loadAsync(url);
         texture.mapping = THREE.EquirectangularReflectionMapping;
-        scene.environment = texture;
-        envTextureToDispose = texture;
+        const pmremTexture = pmremGenerator.fromEquirectangular(texture).texture;
+        scene.environment = pmremTexture;
+        envTextureToDispose = pmremTexture;
+        texture.dispose();
       } catch {
-        const pmremGenerator = new THREE.PMREMGenerator(renderer);
         const envMap = pmremGenerator.fromScene(new RoomEnvironment()).texture;
         scene.environment = envMap;
-        pmremGenerator.dispose();
+        envTextureToDispose = envMap;
       }
     } else {
-      const pmremGenerator = new THREE.PMREMGenerator(renderer);
       const envMap = pmremGenerator.fromScene(new RoomEnvironment()).texture;
       scene.environment = envMap;
-      pmremGenerator.dispose();
+      envTextureToDispose = envMap;
     }
+    pmremGenerator.dispose();
   } else {
     scene.environment = null;
   }

@@ -1,6 +1,6 @@
 import React from 'react';
 import { ModelAsset, Preset } from '../types';
-import { Sparkles, Upload, Box, RefreshCw, Grid, Sun, Moon } from 'lucide-react';
+import { Sparkles, Upload, Box, RefreshCw, Grid, Sun, Moon, Camera as CameraIcon } from 'lucide-react';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import {
@@ -20,8 +20,8 @@ interface NavbarProps {
   onUploadClick: () => void;
   presets: Preset[];
   onSelectPreset: (preset: Preset) => void;
-  activeView: 'studio' | 'interactive';
-  setActiveView: (view: 'studio' | 'interactive') => void;
+  activeView: 'studio' | 'webcam' | 'interactive';
+  setActiveView: (view: 'studio' | 'webcam' | 'interactive') => void;
   theme: 'dark' | 'light';
   toggleTheme: () => void;
 }
@@ -70,7 +70,17 @@ export function Navbar({
             className="rounded-sm"
           >
             <Box className="w-3.5 h-3.5" />
-            <span>3D Generator</span>
+            <span>3D Studio</span>
+          </Button>
+
+          <Button
+            variant={activeView === 'webcam' ? 'default' : 'ghost'}
+            size="sm"
+            onClick={() => setActiveView('webcam')}
+            className="rounded-sm"
+          >
+            <CameraIcon className="w-3.5 h-3.5 text-amber-500" />
+            <span>Webcam Face Studio</span>
           </Button>
 
           <Button
