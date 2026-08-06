@@ -10,6 +10,9 @@
 
 ---
 
+<img width="1905" height="1555" alt="Screenshot 2026-08-07 at 03-34-28 3D Spritesheet Studio" src="https://github.com/user-attachments/assets/e0c97ad3-6aa6-4baf-b4f7-969be6a60ed7" />
+
+
 ## 🌟 Key Features
 
 ### 🧊 3D Model Studio & Interactive Viewport
