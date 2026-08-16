@@ -365,7 +365,13 @@ export async function captureSpritesheetFromLiveScene(
   gl.getSize(origSize);
   const origPixelRatio = gl.getPixelRatio();
 
-  // Temporarily resize renderer for frame resolution
+  // Temporarily resize renderer for frame resolution.
+  // Force pixelRatio to 1 so the drawing buffer exactly matches the frame
+  // dimensions. Without this, the buffer becomes frameWidth * devicePixelRatio
+  // (e.g. 2x on HiDPI/retina screens), and copying the canvas at its natural
+  // size into a frameWidth x frameHeight canvas clips/offsets the top-left
+  // portion of the model instead of producing a centered frame.
+  gl.setPixelRatio(1);
   gl.setSize(frameWidth, frameHeight, false);
 
   let finalCols = columns;
@@ -433,7 +439,7 @@ export async function captureSpritesheetFromLiveScene(
       frameCanvas.width = frameWidth;
       frameCanvas.height = frameHeight;
       const frameCtx = frameCanvas.getContext('2d')!;
-      frameCtx.drawImage(gl.domElement, 0, 0);
+      frameCtx.drawImage(gl.domElement, 0, 0, frameWidth, frameHeight);
 
       capturedFrames.push({
         index: idx,
