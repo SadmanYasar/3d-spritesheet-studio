@@ -319,7 +319,7 @@ export function ThreeCanvas({
         shadows
         gl={{
           antialias: true,
-          alpha: sceneConfig.transparentBg,
+          alpha: true,
           preserveDrawingBuffer: true,
         }}
       >
