@@ -331,6 +331,8 @@ export default function App() {
               spritesheet={generatedSpritesheet}
               spritesheetConfig={spritesheetConfig}
               modelName={selectedModel.name}
+              backgroundColor={sceneConfig.backgroundColor}
+              transparentBg={sceneConfig.transparentBg}
             />
           </div>
         </div>
