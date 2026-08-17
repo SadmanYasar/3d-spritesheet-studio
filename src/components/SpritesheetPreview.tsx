@@ -20,12 +20,16 @@ interface SpritesheetPreviewProps {
   spritesheet: GeneratedSpritesheet | null;
   spritesheetConfig: SpritesheetConfig;
   modelName: string;
+  backgroundColor: string;
+  transparentBg: boolean;
 }
 
 export function SpritesheetPreview({
   spritesheet,
   spritesheetConfig,
   modelName,
+  backgroundColor,
+  transparentBg,
 }: SpritesheetPreviewProps) {
   const [activeFrame, setActiveFrame] = useState<number>(0);
   const [isPlaying, setIsPlaying] = useState<boolean>(true);
@@ -313,6 +317,9 @@ export function SpritesheetPreview({
                 style={{
                   width: `${spritesheet.frameWidth}px`,
                   height: `${spritesheet.frameHeight}px`,
+                  backgroundColor: transparentBg
+                    ? 'transparent'
+                    : backgroundColor,
                   backgroundImage: `url(${currentPlayingFrame.dataUrl})`,
                   backgroundSize: 'cover',
                 }}
